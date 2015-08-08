@@ -25,9 +25,6 @@ GUI::GUI(int argc, char **argv)
 	}
 	std::cerr << "created GUI." << std::endl;
 
-	gtk_init(&argc, &argv);
-	GUI::createWindow();
-
 //	pthread_create(&GUI_thread, &attr, (void*(*)(void*))callback, this);
 }
 
@@ -35,16 +32,6 @@ GUI::~GUI(){
 	pclose(fpipe);  
 }
 
-void GUI::createWindow(void){
-
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_widget_set_size_request(window, 500, 300);
-
-	startButton = gtk_button_new_with_label("Start");
-	quitButton = gtk_button_new_with_label("Quit");
-
-	gtk_widget_show_all(window);
-}
 
 void GUI::start(void){
 		pthread_attr_init(&attr);

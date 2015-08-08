@@ -9,11 +9,6 @@ RM = rm -f
 
 EXE = euterpe 
 OBJS = tempoPitch.o gui.o audioPlay.o streamBuffer.o signalProcessingLibrary.o phaseRecov.o 
-ZIPFILE = euterpe.zip
-
-INCLUDE = `pkg-config --cflags --libs gtk+-2.0`
-
-
 
 ## Libraries
 L_PTHREAD       = -lpthread
@@ -29,10 +24,10 @@ LIBS = $(L_PTHREAD) $(L_BOOST_OPTIONS) $(L_FFTW3) $(L_PORTAUDIO) -lm
 all: $(EXE) stand_alone
 
 $(EXE): $(OBJS) euterpe.o 
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(INCLUDE)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 stand_alone: $(OBJS) stand_alone.o
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(INCLUDE)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 
 

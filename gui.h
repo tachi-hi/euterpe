@@ -9,45 +9,6 @@
 #include <cstdio>
 #include <pthread.h>
 
-#include <gtk/gtk.h>
-
-class Button{
- public:
-	Button(char* label){button = gtk_button_new_with_label(label);}
-	~Button(){}
- private:
-	GtkWidget *button;
-//	(void*func)(void);
-};
-
-//template<typename T>
-class Slider{
- public:
-	Slider(){};
-	~Slider(){};
-	void link_value(int* link);
- private:
-	GtkWidget slider;
-	int min;
-	int max;
-	int def_val;
-	void func();
-};
-
-template<typename T>
-class Radio{
- public:
-	Radio(){}
-	~Radio(){}
-	 void link_value(T* link);
- private:
-	GtkWidget slider;
-	int min;
-	int max;
-	int def_val;
-	void func();
-};
-
 class GUI{
  public:
  
@@ -75,13 +36,6 @@ class GUI{
 
   pthread_t GUI_thread;
   pthread_attr_t attr;
-
-	// gtk
-	GtkWidget *window;
-	void createWindow(void);
-
-	GtkWidget *startButton;
-	GtkWidget *quitButton;
 
 /*
 	static void * callback(void *arg){reinterpret_cast<GUI*>(arg)->callback_();return 0;}
