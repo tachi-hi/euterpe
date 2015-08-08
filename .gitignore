@@ -1,0 +1,9 @@
+*.o
+euterpe
+stand_alone
+*~
+obsolete
+
+.*
+!.gitignore
+
