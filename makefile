@@ -8,7 +8,7 @@ CXXFLAGS = -O3 -Wall
 RM = rm -f
 
 EXE = euterpe 
-OBJS = tempoPitch.o gui.o audioPlay.o streamBuffer.o signalProcessingLibrary.o phaseRecov.o 
+OBJS = tempoPitch.o gui.o audioPlay.o signalProcessingLibrary.o phaseRecov.o 
 
 ## Libraries
 L_PTHREAD       = -lpthread
