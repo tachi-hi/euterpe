@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <unistd.h> //usleep
 
 GUI::GUI(int argc, char **argv)
 	:	key(0),
