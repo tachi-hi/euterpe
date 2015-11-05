@@ -35,3 +35,10 @@ Just run the `makefile`
 ### How to run?
 
     ./euterpe
+
+
+## See Also
+
+- <https://github.com/tachi-hi/temperament4fft>
+- <https://github.com/tachi-hi/slidingHPSS>
+
