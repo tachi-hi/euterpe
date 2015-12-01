@@ -108,15 +108,6 @@ void SlideBlock<T>::pop(T* out){
     out[i] = data_alias[current_point][i];
 }
 
-template<typename T>
-std::vector<T> SlideBlock<T>::pop(){
-  std::vector<T> &out;
-  out = new std::vector<T>(n_freq);
-  for(int i = 0; i != n_freq; i++)
-    (*out)[i] = data_alias[current_point];
-  return out;
-}
-
 #endif
 
 
