@@ -25,6 +25,7 @@ all: $(EXE)
 
 $(EXE): $(OBJS) euterpe.o 
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
+	cp $(EXE) ..
 
 stand_alone: $(OBJS) stand_alone.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
