@@ -30,9 +30,11 @@ You need to install following softwares first.
 
 ### Build
 
-Just run the `makefile`
+Just run the `makefile` in `src`
 
+    cd src
     make
+    cd -
 
 ### How to run?
 
@@ -41,6 +43,8 @@ Just run the `makefile`
 
 ## See Also
 
-- <https://github.com/tachi-hi/temperament4fft>
-- <https://github.com/tachi-hi/slidingHPSS>
-
+- Other codes used in the papers above
+   - <https://github.com/tachi-hi/temperament4fft>
+   - <https://github.com/tachi-hi/HPSS> (In the emperical evaluations in the paper above, the codes in this repository were used.)
+- Related codes 
+    - <https://github.com/tachi-hi/slidingHPSS> (An older implementation of HPSS)
