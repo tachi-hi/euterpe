@@ -8,7 +8,7 @@ CXXFLAGS = -O3 -Wall
 RM = rm -f
 
 EXE = euterpe 
-OBJS = tempoPitch.o gui.o audioPlay.o signalProcessingLibrary.o phaseRecov.o 
+OBJS = tempoPitch.o gui.o audioPlay.o signalProcessingLibrary.o phaseRecov.o
 
 ## Libraries
 L_PTHREAD       = -lpthread
@@ -21,7 +21,7 @@ LIBS = $(L_PTHREAD) $(L_BOOST_OPTIONS) $(L_FFTW3) $(L_PORTAUDIO) -lm
 
 ## all
 .PHONY: all
-all: $(EXE) stand_alone
+all: $(EXE) 
 
 $(EXE): $(OBJS) euterpe.o 
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
