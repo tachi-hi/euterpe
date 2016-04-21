@@ -11,7 +11,7 @@ namespace FFT{
   void fft__ (S *input, T *output, int length, bool flag);
 
   template<class S, class T>
-  void forward (S *input, T *output, int length) {fft__(input, output, length, true); }; 
+  void forward (S *input, T *output, int length) {fft__(input, output, length, true); };
   template<class S, class T>
   void inverse (S *input, T *output, int length) {fft__(input, output, length, false); };
 
@@ -77,19 +77,18 @@ void FFT::fft__(S *input, T *output, int length, bool flag){
     }
   }
   double sign = flag ? 1.0 : -1.0;
-  
-  //入力が何であれ，複素にコピーしておく。
+
   std::vector<std::complex<double> > tmp(length);
   for(int i = 0; i < length; i++){
     tmp[i] = input[i];
   }
-  
+
   int xp2 = length;
   for(int iter = 1; iter < length*2; iter*=2){
   int xp = xp2;
     xp2 = xp / 2;
     double w = M_PI / xp2;
-    
+
     for(int k = 0; k < xp2; k++){
       double arg = k * w;
       std::complex<double> ww( cos(arg), sign * sin(arg) );
@@ -102,7 +101,7 @@ void FFT::fft__(S *input, T *output, int length, bool flag){
       }
     }
   }
-  
+
   int j1 = length / 2;
   int j2 = length - 1;
   int i = 1, j = 1;
@@ -121,9 +120,9 @@ void FFT::fft__(S *input, T *output, int length, bool flag){
     }
     j += k;
   }
-  
+
   cast_copy(&(tmp[0]), output, length);
-  
+
   if(flag){
     ;
   }else{
@@ -135,4 +134,3 @@ void FFT::fft__(S *input, T *output, int length, bool flag){
 }
 
 #endif
-

@@ -7,11 +7,7 @@
 //typedef double FLOAT;
 
 // todo
-// ファイル入出力追加
-// 取るもの
-//   カラオケ化
-//   ピッチ変える
-//   ミキシング
+//  file io
 
 #include "euterpe.h"
 
@@ -36,7 +32,7 @@ int main(int argc, char **argv){
   StreamBuffer<float> Buffer_H_short;
   StreamBuffer<float> Buffer_P_short;
   StreamBuffer<float> Buffer_H_long;
-  StreamBuffer<float> Buffer_P_long;	
+  StreamBuffer<float> Buffer_P_long;
   StreamBuffer<float> Buffer_karaoke;
   StreamBuffer<float> outBuffer;
 
@@ -59,19 +55,19 @@ int main(int argc, char **argv){
 
 	HPSS_pipe HPSS_long(7, 2048, 1024, 10, 10);
 
-//	HPSS_long.setBuffer(&Buffer_H_short, &Buffer_H_long,  &Buffer_P_long);  
-	HPSS_long.setBuffer(&inBuffer, &Buffer_H_long,  &Buffer_P_long);  
+//	HPSS_long.setBuffer(&Buffer_H_short, &Buffer_H_long,  &Buffer_P_long);
+	HPSS_long.setBuffer(&inBuffer, &Buffer_H_long,  &Buffer_P_long);
 //	HPSS_long.set_filter_a(400);
 
 
   // GUI --------------------------------------------------------------------------------
-  GUI panel(argc, argv); // GUI関連は最後に持っていきたいが今のところ無理
+  GUI panel(argc, argv);
 
 	// Timbre changer ---------------------------------------------------------------------
-	// このやりかた重いからHPSSをそれぞれ改造した方がいい
+	// too heavy
 /*
   Filter equalizer_H(256, 128);
-  equalizer_H.setBuffer(&Buffer_H_long, &Buffer_H_long_tmp);  
+  equalizer_H.setBuffer(&Buffer_H_long, &Buffer_H_long_tmp);
 	equalizer_H.set_filter_a(300.);
 	equalizer_H.set_filter_b(500.);
 */
@@ -80,17 +76,17 @@ int main(int argc, char **argv){
   StreamAdder adder(2048, &panel); // GUIはパラメータではなくて逆にする。
   adder.add_input_stream(&Buffer_P_short); adder.set_multiply(0, 1.0);
   adder.add_input_stream(&Buffer_H_long);  adder.set_multiply(1, 1.0);
-//  adder.add_input_stream(&Buffer_P_long);  adder.set_multiply(2, 0.0); //こいつの値をGUIにいじらせたい。面倒なのであとで。
-  adder.add_input_stream(&Buffer_H_short);  adder.set_multiply(2, 0.0); //こいつの値をGUIにいじらせたい。
-  adder.set_output_stream(&Buffer_karaoke);  
+//  adder.add_input_stream(&Buffer_P_long);  adder.set_multiply(2, 0.0); // control through GUI (todo)
+  adder.add_input_stream(&Buffer_H_short);  adder.set_multiply(2, 0.0); // control through GUI (todo)
+  adder.set_output_stream(&Buffer_karaoke);
 
   // PitchConversion ---------------------------------------------------------------------
   TempoPitch converter;
 //  converter.init(1024, 128, 1,  7, 10, freq, &panel);//パラメータは？
-//  converter.init(1024, 128, 1 /* channel */,  7 /* block */, 12 /* coeff */, freq, &panel);//パラメータは？ // フレームの長さはだいぶ長くとらないといけない． 
-  converter.init(1024 * 2, 128 * 2, 1 /* channel */,  7 /* block */, 15 /* coeff */, freq, &panel);//パラメータは？ // フレームの長さはだいぶ長くとらないといけない． 
-//  converter.init(1024 * 4, 128 * 4, 1 /* channel */,  7 /* block */, 12 /* coeff */, freq, &panel);//パラメータは？ // フレームの長さはだいぶ長くとらないといけない． 
-  	//coeff は5, 7では音色が変わってしまう．12くらいにすると同じ人が歌ってるように聞こえる．40は大きすぎ
+//  converter.init(1024, 128, 1 /* channel */,  7 /* block */, 12 /* coeff */, freq, &panel);//
+  converter.init(1024 * 2, 128 * 2, 1 /* channel */,  7 /* block */, 15 /* coeff */, freq, &panel);//param? // frame should be very long
+//  converter.init(1024 * 4, 128 * 4, 1 /* channel */,  7 /* block */, 12 /* coeff */, freq, &panel);//
+  	//coeff 5, 7 change timbre. 12 OK. 40 too large
   converter.setBuffer(&Buffer_karaoke, &outBuffer);
 
 	// start  ---------------------------------------------------------------------------
@@ -102,7 +98,7 @@ int main(int argc, char **argv){
 	converter.start();
 	panel.start();
 
-	//　1秒おきになにか情報を表示しておく。 -----------------------------------------------------------------
+	// display something every 1[s] -----------------------------------------------------------------
 	int sec = 0;
 	while(1){
 		sec++;
@@ -134,4 +130,3 @@ int main(int argc, char **argv){
   // GUI kill
   return 0;
 }
-

@@ -14,9 +14,9 @@ Karaoke system.
 
 + Hardware: Audio I/O is required. (PC with microphones and speakers)
 + OS: Linux and Mac OS X
-    + The system has been originally developed on the Linux Mint. 
-    + It would be easier to build the systme on other Debian-based distributions. 
-    + It may also be possible to build the system on other kind of distributions e.g. Fedora but I have not verified yet.
+    + The system has been originally developed on Linux Mint.
+    + It would be also easy to build the system on other Debian-based distributions including Ubuntu.
+    + It may also be possible to build the system on other kind of distributions e.g. Fedora, but I have not verified it yet.
     + I have successfully built the codes on Mac OS X (Yosemite) using `clang++`
 
 ### Libraries
@@ -46,5 +46,5 @@ Just run the `makefile` in `src`
 - Other codes used in the papers above
    - <https://github.com/tachi-hi/temperament4fft>
    - <https://github.com/tachi-hi/HPSS> (In the emperical evaluations in the paper above, the codes in this repository were used.)
-- Related codes 
+- Related codes
     - <https://github.com/tachi-hi/slidingHPSS> (An older implementation of HPSS)
