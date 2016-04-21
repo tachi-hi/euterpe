@@ -1,5 +1,5 @@
-// とりあえずコピペ
-// 簡単に整理
+// copied from Mizuno's codes
+// refactored a little
 
 typedef double FLOAT;
 
@@ -11,7 +11,7 @@ phaseRecov::phaseRecov(){
 }
 
 phaseRecov::~phaseRecov(){
-	//	deleteとかかく
+	// delete
 	delete cmpSpec;
 }
 
@@ -25,7 +25,7 @@ void phaseRecov::FFTWalloc(){
 
 	plans.alloc(bs);
 	inv_plans.alloc(bs);
-	// たくさん使うのはestimateじゃなくて実測のやつにするべき。
+	// strategy should not be "estimate" but should be "evaluated" or something
 	for (int j=0; j<bs; j++){
 		plans[j]     = fftw_plan_dft_r2c_1d(frame, inL+j*frame, outL+j*(frame/2+1), FFTW_ESTIMATE );
 //		plans[j]     = fftw_plan_dft_r2c_1d(frame, &(sigBuf[j][0]), reinterpret_cast<fftw_complex*>(cmpSpec[j]), FFTW_ESTIMATE );
@@ -34,7 +34,7 @@ void phaseRecov::FFTWalloc(){
 	}
 
 
-	// ピッチ変換用？
+	// pitch conv
 	iinL  = new FLOAT[frame * 4];
 	ioutL = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*(frame*2+1));
 
@@ -59,7 +59,7 @@ void phaseRecov::init(int frame_, int shift_, int ch_, int bs_){
 ///	refL   = new FLOAT[coeff+1];
 //	stateL = new FLOAT[coeff];
 	ampL   = new FLOAT[(frame/2+1)*bs];
-	sigL   = new FLOAT[frame+(bs-1)*shift]; //このへんのはこれでOK?もしかするとバッファが全然足りないのでは？
+	sigL   = new FLOAT[frame+(bs-1)*shift]; // buffer sufficient?
 	bufL   = new FLOAT[frame];
 
 	read_buffer.alloc(frame * 2);
@@ -83,7 +83,7 @@ void phaseRecov::generateWindow(void){
 	for (int h=0; h<frame; h++){
 		w[h]  = 0.5 - 0.5 * cos(2.0 * M_PI * h / frame);
 		iw[h] = w[h];
-		a[h]  = w[h] / frame / (frame/shift) * 8 / 3;  //frameで割るのはFTTWの仕様の為
+		a[h]  = w[h] / frame / (frame/shift) * 8 / 3;  // devide by frame because of the FFTW's design
 	}
 }
 
@@ -106,7 +106,7 @@ void phaseRecov::callback_(void){
 //		update_cframe2();
 
 		//////// block shift
-		if (++iframe == bs) iframe = 0; //bsってのはブロックサイズ？
+		if (++iframe == bs) iframe = 0; //bs may be blcok size
 		if (++tframe == bs) tframe = 0;
 
 		read_data_from_the_input(cframe2);
@@ -147,7 +147,7 @@ void phaseRecov::update(void){
 		inverseFFT();
 		iFFTaddition();
 
-		if(output->size() < 16000 * 0.5){ // 0.5秒以下では必ず出力、それ以上たまったら計算ぶんまわすフェーズに入る
+		if(output->size() < 16000 * 0.5){ // if less than 0.5[s] output
 			lastIteration();
 			iteration2();
 			break;
@@ -199,36 +199,35 @@ void phaseRecov::push_data_to_the_output(void){
 
 void phaseRecov::lastIteration(void){
 	for (int h = 0; h < frame; h++){
-		bufL[h] += inL[tframe * frame + h];  //ループ終了分の結果
+		bufL[h] += inL[tframe * frame + h];
 	}
 	push_data_to_the_output();
 	// shift
 	for(int h = 0; h < frame; h++){
 		bufL[h] = h < frame - shift ? bufL[h + shift] : 0;
 	}
-} 
+}
 
-void phaseRecov::iteration2(void){    
+void phaseRecov::iteration2(void){
 	for (int j = 0; j < bs; j++){
 		int offset2 = (j - tframe) * shift + ((j < tframe) ? bs * shift : 0 );
 		for (int h = 0; h < frame; h++){
-			inL[j * frame + h] = w[h] * sigL[h + offset2];  //窓関数をかける
+			inL[j * frame + h] = w[h] * sigL[h + offset2];  //window
 		}
-		fftw_execute(plans[j]);  //フーリエ変換
+		fftw_execute(plans[j]); 
 		int offset1 = j * (frame / 2 + 1);
 
 		for (int h = 0; h < frame / 2 + 1; h++){
 			double tmp = sqrt(outL[offset1+h][0]*outL[offset1+h][0]+outL[offset1+h][1]*outL[offset1+h][1]);
-			if (tmp < 1e-100){
-				outL[offset1 + h][0] = 0.0;  //二乗パワー更新(0のとき)
-				outL[offset1 + h][1] = 0.0;  //二乗パワー更新(0のとき)
+ 			// update power
+ 			if (tmp < 1e-100){
+				outL[offset1 + h][0] = 0.0;
+				outL[offset1 + h][1] = 0.0;
 			}else{
 				tmp = ampL[offset1+h]/tmp;
-				outL[offset1 + h][0] *= tmp;  //二乗パワー更新
-				outL[offset1 + h][1] *= tmp;  //二乗パワー更新
+				outL[offset1 + h][0] *= tmp;
+				outL[offset1 + h][1] *= tmp;
 			}
 		}
 	}
 }
-
-

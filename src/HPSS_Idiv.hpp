@@ -54,14 +54,14 @@ public:
 				for(int k = 1; k < KKK; k++){
 
 					(*H)[t][k] = 0;
-					(*P)[t][k] = (*W)[t][k];// * sqrt(3 + (FLOAT)KKK/(FLOAT)k); // ベースを少し強調する
+					(*P)[t][k] = (*W)[t][k];// * sqrt(3 + (FLOAT)KKK/(FLOAT)k); // enhance bass? -> x
 				}
 			}
 			for(int t = 1; t < block_size-1; t++){
 				for(int k = KKK; k < frame_length/2-1; k++){
 //*
-					FLOAT w_h_tmp = w_h;// * k; // 周波数に比例させてみる
-					FLOAT w_p_tmp = w_p;// / sqrt(k); // 周波数に比例させてみる
+					FLOAT w_h_tmp = w_h;// * k; // proportional to freq? -> x
+					FLOAT w_p_tmp = w_p;// / sqrt(k); // proportional to freq? -> x
 
 					FLOAT H_A = 2 * w_h_tmp + 2;
 					FLOAT P_A = 2 * w_p_tmp + 2;
@@ -103,7 +103,6 @@ public:
 
 		for(int j = 0; j < frame_length/2; j++){
 /*
-			// 周囲の多数決で決める？
 			int tmp1, tmp2, tmp3, tmp4, tmp5;
 			tmp1 = tmp2 = tmp3 = tmp4 = tmp5 = 0;
 			if( j != 0 && j != 1){
@@ -114,17 +113,17 @@ public:
 				tmp5 	= Hout[j + 2] > Pout[j + 2] ? 1 : 0;
 			}
 			FLOAT a = tmp1 + tmp2 + tmp3 + tmp4 + tmp5 > 2 ? 1 : 0;
-			Hout[j] = (amplitude[j]*a); // 
-			Pout[j] = (amplitude[j]*(1 - a)); 
+			Hout[j] = (amplitude[j]*a); //
+			Pout[j] = (amplitude[j]*(1 - a));
 */
 			if(mask == binary){
 				Hout[j] = Hout[j] > Pout[j] ? 1 : 0;
 				Pout[j] = 1 - Hout[j];
 				Hout[j] = (amplitude[j]*(Hout[j]));
-				Pout[j] = (amplitude[j]*(Pout[j])); 
+				Pout[j] = (amplitude[j]*(Pout[j]));
 			}else if(mask == wiener){
 				Hout[j] = (amplitude[j]*sqrt(Hout[j]));
-				Pout[j] = (amplitude[j]*sqrt(Pout[j])); 
+				Pout[j] = (amplitude[j]*sqrt(Pout[j]));
 			}
 		}
 		for(int j = frame_length/2+1; j < frame_length; j++){
@@ -170,7 +169,7 @@ private:
 	int frame_length;
 	int frame_shift;
 	int push_pop_count;
-	bool count_flag; 
+	bool count_flag;
 	FLOAT w_h;
 	FLOAT w_p;
 	SlideBlock<FLOAT> *W;
@@ -212,7 +211,7 @@ HPSS_Idiv::HPSS_Idiv(int a, int b, int c, FLOAT d, FLOAT e){
 	exec_count = 0;
 	exec_count_total = 0;
 	second = 0;
-	
+
 	mask = binary;
 //	mask = wiener;
 }
@@ -236,4 +235,3 @@ HPSS_Idiv::~HPSS_Idiv(){
 	delete []Hcompspec;
 	delete []Pcompspec;
 }
-

@@ -1,5 +1,3 @@
-// HPSSを継承してパイプとして使えるようにするクラス。
-
 #pragma once
 
 #include "streamBuffer.h"
@@ -53,11 +51,11 @@ class HPSS_pipe_long : public HPSS_pipe{
 			// ここを出力側の都合に合うように書き換える？
 				// 待つのではなく
 			while(!inBuffer->read_data(local_buffer_float, length)){
-				usleep(1000); //1[ms]まつ
+				usleep(1000); //1[ms]
 			}
 
 			inBuffer->rewind_stream_a_little(shift);
-	
+
 			for(int i = 0; i < length; i++){
 				local_buffer_double[i] = static_cast<double>(local_buffer_float[i]);
 			}
@@ -65,7 +63,7 @@ class HPSS_pipe_long : public HPSS_pipe{
 			this->push_new_data(local_buffer_double);
 
 			if(!loop_flag){
-				this->update(5); 
+				this->update(5);
 			}
 
 			if(!this->filled()){
@@ -73,10 +71,9 @@ class HPSS_pipe_long : public HPSS_pipe{
 			}
 
 //			MUTEX.lock();
-			this->pop(H_buffer_double, P_buffer_double); 
+			this->pop(H_buffer_double, P_buffer_double);
 //			MUTEX.unlock();
-	 
-			// ここで試しにフィルタリングしてみる？
+
 //			filtering_H();
 			filtering_H();
 //			filtering_P();
@@ -88,7 +85,7 @@ class HPSS_pipe_long : public HPSS_pipe{
 			}
 			for(int i = shift; i < length; i++){
 				H_prev[i - shift] = static_cast<float>(H_buffer_double[i]);
-				P_prev[i - shift] = static_cast<float>(P_buffer_double[i]);				
+				P_prev[i - shift] = static_cast<float>(P_buffer_double[i]);
 			}
 
 			outBuffer_H->push_data(H_buffer_float, shift);
@@ -189,5 +186,3 @@ class HPSS_pipe_long : public HPSS_pipe{
 	double a;
 
 };
-
-
