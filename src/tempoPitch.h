@@ -24,36 +24,24 @@ class TempoPitch: public phaseRecov{
 	}
 
 	void start(void){
-//		pthread_create(&master_thread,     &attr_RR,   (void*(*)(void*))TempoPitch::master_callback, this);		
+//		pthread_create(&master_thread,     &attr_RR,   (void*(*)(void*))TempoPitch::master_callback, this);
 			pthread_create(&update_thread,     &attr_RR,   (void*(*)(void*))TempoPitch::update_callback, this);
 			pthread_create(&tempopitch_thread, &attr_FIFO, (void*(*)(void*))TempoPitch::callback, this);
 	}
 
-/*
-	static void* master_callback(void* arg){reinterpret_cast<TempoPitch*>(arg)->master_callback_();return 0;}	
-	void master_callback_(void){
-		while(1){
-//			pthread_create(&update_thread,     &attr_RR,   (void*(*)(void*))TempoPitch::update_callback, this);
-			pthread_create(&tempopitch_thread, &attr_FIFO, (void*(*)(void*))TempoPitch::callback, this);
-			//同期？
-			usleep(10000);
-		}
-	}
-*/
-
 	static void* callback(void* arg){	
 		reinterpret_cast<TempoPitch*>(arg)->callback_();
-		return 0;}	
+		return 0;}
 	void callback_(void);
 
 	static void* update_callback(void* arg){
 		reinterpret_cast<TempoPitch*>(arg)->update_callback_();
-		return 0;}	
+		return 0;}
 	void update_callback_(void);
 
 	int get_exec_count_diff(){
-		int tmp = exec_count; 
-		exec_count = 0; 
+		int tmp = exec_count;
+		exec_count = 0;
 		second++;
 		return tmp;
 	}
@@ -109,5 +97,3 @@ class TempoPitch: public phaseRecov{
 	int exec_count_total;
 	int second;
 };
-
-

@@ -291,7 +291,7 @@ void TempoPitch::callback_(void){
 			outL[iframe_ * (frame / 2 + 1) + h][1] = ioutL[h][1];
 			ampL[iframe_ * (frame / 2 + 1) + h] = sqrt(ioutL[h][0] * ioutL[h][0] + ioutL[h][1] * ioutL[h][1]);
 		}
-		for (int h = s; h < frame/2 + 1; h++){
+		for (int h = s; h < frame/2 + 1; h++){ 
 /*
 			outL[iframe_ * (frame / 2 + 1) + h][0] = 0.0;
 			outL[iframe_ * (frame / 2 + 1) + h][1] = 0.0;
@@ -348,7 +348,7 @@ void TempoPitch::read_data_from_the_input(int modified_frame_length){
 
 void TempoPitch::lastIteration(void){
 	for (int h = 0; h < frame; h++){
-		bufL[h] += inL[tframe_ * frame + h]; 
+		bufL[h] += inL[tframe_ * frame + h];
 	}
 	push_data_to_the_output();
 	// shift

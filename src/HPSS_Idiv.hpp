@@ -102,20 +102,6 @@ public:
 		phaseSpec->pop(&(phase[0]));
 
 		for(int j = 0; j < frame_length/2; j++){
-/*
-			int tmp1, tmp2, tmp3, tmp4, tmp5;
-			tmp1 = tmp2 = tmp3 = tmp4 = tmp5 = 0;
-			if( j != 0 && j != 1){
-				tmp1 	= Hout[j - 2] > Pout[j - 2] ? 1 : 0;
-				tmp2 	= Hout[j - 1] > Pout[j - 1] ? 1 : 0;
-				tmp3 	= Hout[j + 0] > Pout[j + 0] ? 1 : 0;
-				tmp4 	= Hout[j + 1] > Pout[j + 1] ? 1 : 0;
-				tmp5 	= Hout[j + 2] > Pout[j + 2] ? 1 : 0;
-			}
-			FLOAT a = tmp1 + tmp2 + tmp3 + tmp4 + tmp5 > 2 ? 1 : 0;
-			Hout[j] = (amplitude[j]*a); //
-			Pout[j] = (amplitude[j]*(1 - a));
-*/
 			if(mask == binary){
 				Hout[j] = Hout[j] > Pout[j] ? 1 : 0;
 				Pout[j] = 1 - Hout[j];

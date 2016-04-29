@@ -35,7 +35,6 @@ class myMutex{
     pthread_mutex_unlock(&mutex);
   }
 
-  //	pthread_mutex_t mutex; //privateの方がいい
  private:
   T value;
   pthread_mutex_t mutex; // avoid locked by someone outside of the class
