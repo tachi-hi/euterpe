@@ -1,6 +1,6 @@
 /*******************************************************************/
-// PortAudioのラッパー
-// シングルトン
+// PortAudio wrapper
+// singleton
 //
 // (c) 2010 Aug. Hideyuki Tachibana. tachibana@hil.t.u-tokyo.ac.jp
 /*******************************************************************/
@@ -15,12 +15,12 @@
 #include<unistd.h>
 #include"debug.h"
 
-// シングルトン
+// singleton
 AudioDevice *AudioDevice::instance = 0;
 AudioDevice::AudioDevice(){}
 AudioDevice::~AudioDevice(){}
 
-// エラーチェック用
+// error checker
 void AudioDevice::PortAudioErrorCheck(const PaError& err,
 				      const char *debug_message)
 {
@@ -43,25 +43,25 @@ void AudioDevice::init(int n_channel_,
   samples_per_buffer = samples_per_buffer_;
   inBuffer = inBuffer_;
   outBuffer = outBuffer_;
-  
+
   // Port Audio Initialization
   PaError err = Pa_Initialize();
   PortAudioErrorCheck(err, "in initialization.");
-  
+
   // Input and Output Initialization
   inputParameters.device = Pa_GetDefaultInputDevice(); /* default input device */
   inputParameters.channelCount = n_channel;
   inputParameters.sampleFormat = paFloat32;
   inputParameters.suggestedLatency = Pa_GetDeviceInfo( inputParameters.device )->defaultHighInputLatency;
   inputParameters.hostApiSpecificStreamInfo = NULL;
-  
+
   outputParameters.device = Pa_GetDefaultOutputDevice(); /* default output device */
   outputParameters.channelCount = n_channel;
   outputParameters.sampleFormat = paFloat32;
   //ここでエラーを返してくることがある。
   outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultHighOutputLatency;
   outputParameters.hostApiSpecificStreamInfo = NULL;
-  
+
   std::cerr << "Audio Parameteres Initialized" << std::endl;
 }
 
@@ -73,7 +73,7 @@ void AudioDevice::start(){
 			      sampling_rate,
 			      samples_per_buffer,
 			      paNoFlag,
-			      AudioDevice::CallBack, 
+			      AudioDevice::CallBack,
 			      this);
   PortAudioErrorCheck(err, "in Pa_OpenStream");
   err = Pa_StartStream(stream);
@@ -90,13 +90,13 @@ void AudioDevice::stop(){
 void AudioDevice::kill(){
   PaError err = Pa_CloseStream( stream );
   PortAudioErrorCheck(err, "in Pa_CloseStream");
-  
+
   err = Pa_Terminate();
   PortAudioErrorCheck(err, "in Pa_Terminate");
 }
 
 
-// これが呼び出される頻度をあげることはできないのか？
+// is it possible to call call this callback more frequently?
 int AudioDevice::CallBack_(const void* inputBuffer,
 			   void *outputBuffer,
 			   unsigned long framesPerBuffer,
@@ -114,17 +114,16 @@ int AudioDevice::CallBack_(const void* inputBuffer,
       reinterpret_cast<float*>(outputBuffer)[i] = 0.0;
     }
   }else{
-    // NNN回試してだめなら諦める。
+    // resign if NNN times trials fail
 		const int NNN = 30;
 		trial_count = 0;
 		for(int i = 0; i < NNN; i++){
 			trial_count++;
-			// ループの回数が増えるごとに重要度を上げあれれば
 			if(!outBuffer->read_data(reinterpret_cast<float *>(outputBuffer), n_channel * framesPerBuffer)){
 				if(i == NNN-1){
 					std::cerr << "Underflow." << std::endl;
 				}
-				usleep(1000); //1 [ms] -> 5[ms]? リスキー？
+				usleep(1000); //1 [ms] -> 5[ms]? risky?
 				continue;
 			}
 			else{
@@ -135,5 +134,3 @@ int AudioDevice::CallBack_(const void* inputBuffer,
   }
   return 0;
 }
-
-

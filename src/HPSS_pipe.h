@@ -27,7 +27,7 @@ class HPSS_pipe : public HPSS_Idiv{
 	  pthread_attr_init(&attr);
 	  pthread_attr_setschedpolicy(&attr, SCHED_RR);
 
-//		loop_flag = true; // ここでiteration strategyが変えられる
+//		loop_flag = true; // Manually Modify around this if you want to change the iteration strategy written in the paper
 		loop_flag = false;
 	}
 	virtual ~HPSS_pipe(){
@@ -68,14 +68,12 @@ class HPSS_pipe : public HPSS_Idiv{
 
 	virtual void callback_(void){
 		while(1){
-			// ここを出力側の都合に合うように書き換える？
-				// 待つのではなく
 			while(!inBuffer->read_data(local_buffer_float, length)){
-				usleep(1000); //1[ms]まつ
+				usleep(1000); //1[ms]ま
 			}
 
 			inBuffer->rewind_stream_a_little(shift);
-	
+
 			for(int i = 0; i < length; i++){
 				local_buffer_double[i] = static_cast<double>(local_buffer_float[i]);
 			}
@@ -83,8 +81,8 @@ class HPSS_pipe : public HPSS_Idiv{
 			this->push_new_data(local_buffer_double);
 
 			if(!loop_flag){
-//				this->update(5); 
-				this->update(1); 
+//				this->update(5);  // Manually modify around here if you want to change the number of iteration
+				this->update(1);
 			}
 
 			if(!this->filled()){
@@ -92,16 +90,16 @@ class HPSS_pipe : public HPSS_Idiv{
 			}
 
 			MUTEX.lock();
-			this->pop(H_buffer_double, P_buffer_double); 
+			this->pop(H_buffer_double, P_buffer_double);
 			MUTEX.unlock();
-	 
+
 			for(int i = 0; i < shift; i++){
 				H_buffer_float[i] = static_cast<float>(H_buffer_double[i]) + H_prev[i];
 				P_buffer_float[i] = static_cast<float>(P_buffer_double[i]) + P_prev[i];
 			}
 			for(int i = shift; i < length; i++){
 				H_prev[i - shift] = static_cast<float>(H_buffer_double[i]);
-				P_prev[i - shift] = static_cast<float>(P_buffer_double[i]);				
+				P_prev[i - shift] = static_cast<float>(P_buffer_double[i]);
 			}
 			outBuffer_H->push_data(H_buffer_float, shift);
 			outBuffer_P->push_data(P_buffer_float, shift);
@@ -124,7 +122,6 @@ class HPSS_pipe : public HPSS_Idiv{
 	double *H_buffer_double;
 	double *P_buffer_double;
 
-	//前フレームの出力を覚えておくためのバッファ
 	float *H_prev;
 	float *P_prev;
 	bool loop_flag;
@@ -134,5 +131,3 @@ class HPSS_pipe : public HPSS_Idiv{
 	pthread_attr_t attr;
 	myMutex<int> MUTEX;
 };
-
-

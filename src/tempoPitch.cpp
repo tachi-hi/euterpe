@@ -18,13 +18,11 @@ TempoPitch::TempoPitch(){
 }
 
 TempoPitch::~TempoPitch(){
-	//	deleteとかかく
+	//	delete  etc
 }
 
 // ------------------------------------------------------------------------------------
-// 単なる
-//	return pow(2.0, static_cast<double>(key)/12.0);
-// ではなくFFTが高速になるような値をちゃんと選ぶ。
+// this function is not actuallty used except in print function
 double SetPitch(int key){
 	return pow(2.0, static_cast<double>(key)/12.0);
 }
@@ -102,8 +100,7 @@ void TempoPitch::update_cframe2(){
 	if (cframe2 != tmp){
 		cframe2 = tmp;
 		std::cerr << tmp << " " << (int)(SetPitch(panel->key.get()) * frame) << " " << (int)(panel->key.get()) << " " << frame << " " << std::endl;
-		
-		// 全部作っておいてリンクだけ買える方針で。
+
 		fftw_destroy_plan(iniL2);
 		iniL2 = fftw_plan_dft_r2c_1d(cframe2, iinL, ioutL, FFTW_ESTIMATE);//
 		for (int h=0; h<cframe2; h++){
@@ -122,14 +119,12 @@ void TempoPitch::FFTWalloc(){
 
 	plans.alloc(bs);
 	inv_plans.alloc(bs);
-	// たくさん使うのはestimateじゃなくて実測のやつにするべき。
 	for (int j=0; j<bs; j++){
 		plans[j]     = fftw_plan_dft_r2c_1d(frame, inL+j*frame, outL+j*(frame/2+1), FFTW_ESTIMATE );
 		inv_plans[j] = fftw_plan_dft_c2r_1d(frame, outL+j*(frame/2+1), inL+j*frame, FFTW_ESTIMATE );
 	}
 
 
-	// ピッチ変換用？
 	iinL  = new FLOAT[frame * 4];
 	ioutL = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*(frame*2+1));
 
@@ -156,7 +151,7 @@ void TempoPitch::init(int frame_, int shift_, int ch_, int bs_, int coeff_, int 
 	refL   = new FLOAT[coeff+1];
 	stateL = new FLOAT[coeff];
 	ampL   = new FLOAT[(frame/2+1)*bs];
-	sigL   = new FLOAT[frame+(bs-1)*shift]; //このへんのはこれでOK?もしかするとバッファが全然足りないのでは？
+	sigL   = new FLOAT[frame+(bs-1)*shift]; // sufficient?
 	bufL   = new FLOAT[frame];
 
 	read_buffer.alloc(frame * 2);
@@ -180,28 +175,28 @@ void TempoPitch::generateWindow(void){
 	for (int h=0; h<frame; h++){
 		w[h]  = 0.5 - 0.5 * cos(2.0 * M_PI * h / frame);
 		iw[h] = w[h];
-		a[h]  = w[h] / frame / (frame/shift) * 8 / 3;  //frameで割るのはFTTWの仕様の為
+		a[h]  = w[h] / frame / (frame/shift) * 8 / 3;
 	}
 }
 
 // ------------------------------------------------------------------------------------
-//包絡を維持した変換
+// timbre fixed
 void TempoPitch::pitch_modify(void){
-	SigRef2(iinL,cframe2,coeff,refL); //包絡(->iinL)と残差(->refL)を計算
+	SigRef2(iinL,cframe2,coeff,refL); // envelope and residual
 
-	fftw_execute(iniL2); //残差をフーリエ変換(リサンプリング)
+	fftw_execute(iniL2); // FFT residual
 	if (frame > cframe2){
 		for (int h = cframe2 / 2 + 1; h < frame / 2 + 1; h++){
-			ioutL[h][0] = ioutL[h][1] = 0.0; 
+			ioutL[h][0] = ioutL[h][1] = 0.0;
 		}
 	}
 
-	fftw_execute(iiniL);//リサンプリングされた残差を逆フーリエ変換
+	fftw_execute(iiniL);// iFFT resampled residual
 	for(int h = 0; h < coeff; h++){
 		stateL[h]=0;
 	}
 	for(int h = 0; h < frame; h++){
-		iinL[h] = refsig(coeff, refL, stateL, iinL[h]) / frame; //包絡と残差を再合成 refsigって何の略？
+		iinL[h] = refsig(coeff, refL, stateL, iinL[h]) / frame; // resynthesize the signal
 	}
 }
 
@@ -245,24 +240,24 @@ void TempoPitch::iFFTaddition(void){
 }
 
 
-void TempoPitch::iteration2(void){    
+void TempoPitch::iteration2(void){
 	for (int j = 0; j < bs; j++){
 		int offset2 = (j - tframe_) * shift + ((j < tframe_) ? bs * shift : 0 );
 		for (int h = 0; h < frame; h++){
-			inL[j * frame + h] = w[h] * sigL[h + offset2];  //窓関数をかける
+			inL[j * frame + h] = w[h] * sigL[h + offset2];
 		}
-		fftw_execute(plans[j]);  //フーリエ変換の実行
+		fftw_execute(plans[j]);
 		int offset1 = j * (frame / 2 + 1);
 
 		for (int h = 0; h < frame / 2 + 1; h++){
 			double tmp = sqrt(outL[offset1+h][0]*outL[offset1+h][0]+outL[offset1+h][1]*outL[offset1+h][1]);
 			if (tmp < 1e-100){
-				outL[offset1 + h][0] = 0.0;  //二乗パワー更新(0のとき)
-				outL[offset1 + h][1] = 0.0;  //二乗パワー更新(0のとき)
+				outL[offset1 + h][0] = 0.0;
+				outL[offset1 + h][1] = 0.0;
 			}else{
 				tmp = ampL[offset1+h]/tmp;
-				outL[offset1 + h][0] *= tmp;  //二乗パワー更新
-				outL[offset1 + h][1] *= tmp;  //二乗パワー更新
+				outL[offset1 + h][0] *= tmp;
+				outL[offset1 + h][1] *= tmp;
 			}
 		}
 	}
@@ -275,7 +270,7 @@ void TempoPitch::callback_(void){
 		update_cframe2();
 
 		//////// block shift
-		if (++iframe_ == bs) iframe_ = 0; //bsってのはブロックサイズ？
+		if (++iframe_ == bs) iframe_ = 0;
 		if (++tframe_ == bs) tframe_ = 0;
 		MUTEX.unlock();
 
@@ -294,7 +289,7 @@ void TempoPitch::callback_(void){
 			//回転させるということ？
 			outL[iframe_ * (frame / 2 + 1) + h][0] = ioutL[h][0];
 			outL[iframe_ * (frame / 2 + 1) + h][1] = ioutL[h][1];
-			ampL[iframe_ * (frame / 2 + 1) + h] = sqrt(ioutL[h][0] * ioutL[h][0] + ioutL[h][1] * ioutL[h][1]); //ここで計算する必要性は？
+			ampL[iframe_ * (frame / 2 + 1) + h] = sqrt(ioutL[h][0] * ioutL[h][0] + ioutL[h][1] * ioutL[h][1]);
 		}
 		for (int h = s; h < frame/2 + 1; h++){
 /*
@@ -325,8 +320,7 @@ void TempoPitch::callback_(void){
 		inverseFFT();
 		iFFTaddition();
 
-		//お休みのしくみを入れる。
-		if(output->size() < 16000 * 0.5){ // 0.3秒以下では必ず出力、それ以上たまったら計算ぶんまわすフェーズに入る
+		if(output->size() < 16000 * 0.5){ // if less than 0.5 sec
 			lastIteration();
 		}
 		iteration2();
@@ -354,14 +348,14 @@ void TempoPitch::read_data_from_the_input(int modified_frame_length){
 
 void TempoPitch::lastIteration(void){
 	for (int h = 0; h < frame; h++){
-		bufL[h] += inL[tframe_ * frame + h];  //ループ終了分の結果
+		bufL[h] += inL[tframe_ * frame + h]; 
 	}
 	push_data_to_the_output();
 	// shift
 	for(int h = 0; h < frame; h++){
 		bufL[h] = h < frame - shift ? bufL[h + shift] : 0;
 	}
-} 
+}
 
 void TempoPitch::push_data_to_the_output(void){
 		float *tmp = new float[shift];
@@ -371,10 +365,3 @@ void TempoPitch::push_data_to_the_output(void){
 		output->push_data(tmp, shift);
 		delete[] tmp; //kokode error ga okiteru?
 }
-
-
-
-
-
-
-

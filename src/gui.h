@@ -11,24 +11,24 @@
 
 class GUI{
  public:
- 
+
   GUI(int, char**);
   ~GUI();
-  
+
   // GUI parameters
-  // myMutex chould be initialized in constructer myMutexの仕様より。
+  // myMutex chould be initialized in constructer 
   myMutex<int> key;
   myMutex<int> tempo;
   myMutex<int> volume;
   enum RunState{is_ready, is_start, is_stop};
   myMutex<RunState> runState;
-  
+
   // GUI panel
 	void start (void);
   bool getstop(void){return stop == -1;}
   bool getquit(void){return quit == -1;}
  private:
-  FILE * fpipe; //パイプでデータを受け取る役割
+  FILE * fpipe;
 	int stop;
 	int quit;
   void getGUIparameters_(void);
@@ -45,4 +45,3 @@ class GUI{
 	}
 */
 };
-

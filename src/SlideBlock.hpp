@@ -10,18 +10,18 @@ class SlideBlock{
 public:
   SlideBlock(int t, int k);
   ~SlideBlock();
-  
-  void apply(T(*)(T)); // 全部の要素に引数として与えた関数を適用する。成功すると1を返し，失敗すると0を返す。
-  T at(int t, int k); // 指定された要素を返す。添え字チェックをするバージョン。
-  T* operator[](int t); // 指定された要素を返すような，簡単なインターフェース。添え字チェックをしない。
-  void push(T *in); // データを挿入する。先にpopしないと，上書きされてデータが消えます。
-  void push(std::vector<T> in); // データを挿入する。先にpopしないと，上書きされてデータが消えます。
-  void pop(T *out); // データを取りだす。
-  std::vector<T> pop(); // データを取りだす。
-  
+
+  void apply(T(*)(T));
+  T at(int t, int k);
+  T* operator[](int t);
+  void push(T *in);
+  void push(std::vector<T> in);
+  void pop(T *out);
+  std::vector<T> pop();
+
 protected:
-  int n_time; // フレームの数
-  int n_freq; // 周波数binの数
+  int n_time;
+  int n_freq;
   T* data;
 
 private:
@@ -40,7 +40,6 @@ SlideBlock<T>::SlideBlock(int n, int k)
   for(int i = 0; i != n; i++){
     data_alias[i] = &(data[i * k]);
   }
-  //全部ゼロ詰
   for(int i = 0; i < n * k; i++){
     data[i] = 0;
   }
@@ -109,6 +108,3 @@ void SlideBlock<T>::pop(T* out){
 }
 
 #endif
-
-
-

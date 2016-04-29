@@ -3,7 +3,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-//デバッグしないときはコメントアウト
+// comment out unless debug mode
 
 template<typename T>
 inline void DBGMSG(T m){
@@ -12,4 +12,3 @@ inline void DBGMSG(T m){
 }
 
 #endif
-

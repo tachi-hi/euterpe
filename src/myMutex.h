@@ -17,16 +17,16 @@ class myMutex{
     pthread_mutex_init(&mutex, NULL);
     value = n;
   }
-  
+
   //
   void lock(){pthread_mutex_lock(&mutex);};
   void unlock(){pthread_mutex_unlock(&mutex);};
-  
-  // こんなものは不要
+
+  // not needed
   T get(){
     pthread_mutex_lock(&mutex);
     T tmp = value;
-    pthread_mutex_unlock(&mutex); 
+    pthread_mutex_unlock(&mutex);
     return tmp;
   }
   void set(T n){
@@ -34,15 +34,11 @@ class myMutex{
     value = n;
     pthread_mutex_unlock(&mutex);
   }
-  
-  //コピー禁止にした方がいい。
-  //デストラクタとかにアンロックが。
-  
+
   //	pthread_mutex_t mutex; //privateの方がいい
  private:
   T value;
-  pthread_mutex_t mutex; //とりあえず外から勝手にロックされないようにprivateにしておく
+  pthread_mutex_t mutex; // avoid locked by someone outside of the class
 };
 
 #endif
-
