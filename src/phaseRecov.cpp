@@ -119,10 +119,10 @@ void phaseRecov::callback_(void){
 		int s = (frame < cframe2 ? frame : cframe2) / 2 + 1;
 
 		for (int h = 0; h < s; h++){
-			//回転させるということ？
+			// rotate
 			outL[iframe * (frame / 2 + 1) + h][0] = ioutL[h][0];
 			outL[iframe * (frame / 2 + 1) + h][1] = ioutL[h][1];
-			ampL[iframe * (frame / 2 + 1) + h] = sqrt(ioutL[h][0] * ioutL[h][0] + ioutL[h][1] * ioutL[h][1]); //ここで計算する必要性は？
+			ampL[iframe * (frame / 2 + 1) + h] = sqrt(ioutL[h][0] * ioutL[h][0] + ioutL[h][1] * ioutL[h][1]);
 		}
 		for (int h = s; h < frame/2 + 1; h++){
 			outL[iframe * (frame / 2 + 1) + h][0] = 0.0;
@@ -214,7 +214,7 @@ void phaseRecov::iteration2(void){
 		for (int h = 0; h < frame; h++){
 			inL[j * frame + h] = w[h] * sigL[h + offset2];  //window
 		}
-		fftw_execute(plans[j]); 
+		fftw_execute(plans[j]);
 		int offset1 = j * (frame / 2 + 1);
 
 		for (int h = 0; h < frame / 2 + 1; h++){

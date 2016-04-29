@@ -99,7 +99,7 @@ class HPSS_pipe_long : public HPSS_pipe{
 
 	void filtering_H(void){
 		fftw_execute( forward );
-		double resolution = 16000. / length; // 16000はサンプリングレート
+		double resolution = 16000. / length; // 16000 samp rate
 
 		for(int i = 0; i < length /2 + 1; i++){
 			H_buffer_double_spec[i] *= // 1.5 / (1 + abs(resolution * i - a) );
