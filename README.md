@@ -1,12 +1,18 @@
 # EUTERPE
 
-Karaoke system.
+This is an automatic audio-to-audio karaoke generation system.
+It converts an ordinary music signal into a karaoke (vocal-off) in real time.
+it can also convert the key of the song.
+
+For technical details, see the literatures below, especially the latest one [1].
 
 ## Related Articles
 
-+ Tachibana, H., Mizuno, Y., Ono, N. and Sagayama, S.: A Real-time Audio-to-audio Karaoke Generation System for Monaural Recordings Based on Singing Voice Suppression and Key Conversion Techniques, accepted for publication 2016
-+ My (H. Tachibana's) Ph.D. Thesis
-+ Tachibana, H., Mizuno, Y., Ono, N. and Sagayama, S.: Euterpe: A Real-time Automatic Karaoke Generation System based on Singing Voice Suppression and Pitch Conversion, Proc. ASJ autumn meeting (2012), **Non-refereed,** **in Japanese**
+[1] Tachibana, H., Mizuno, Y., Ono, N. and Sagayama, S.: A Real-time Audio-to-audio Karaoke Generation System for Monaural Recordings Based on Singing Voice Suppression and Key Conversion Techniques, Journal of Information Processing, Vol. 24, No. 3, pp. 470–482, May, 2016.
+
+[2] My (H. Tachibana's) Ph.D. Thesis, The University of Tokyo, Mar., 2014.
+
+[3] Tachibana, H., Mizuno, Y., Ono, N. and Sagayama, S.: Euterpe: A Real-time Automatic Karaoke Generation System based on Singing Voice Suppression and Pitch Conversion, Proc. ASJ autumn meeting, Sep., 2012, **Non-refereed,** **in Japanese**
 
 ## Setting Up
 
@@ -36,7 +42,12 @@ Just run the `makefile` in `src`
     make
     cd -
 
-### How to run?
+### Usage
+
+- Buy a 3.5mm-3.5mm audio cable.
+- Make your audio player (such as iPod) ready.
+- Connect one end of the cable to your audio player's output jack (3.5mm earphone jack), and the oppisite end to your PC's audio input jack.
+- Run the system by the command below.
 
     ./euterpe
 
