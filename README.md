@@ -10,8 +10,8 @@ For technical details, see the literatures below, especially the latest one [1].
 
 [1] Tachibana, H., Mizuno, Y., Ono, N. and Sagayama, S.: A Real-time Audio-to-audio Karaoke Generation System for Monaural Recordings Based on Singing Voice Suppression and Key Conversion Techniques, Journal of Information Processing, Vol. 24, No. 3, pp. 470–482, May, 2016.
 
-+ paper <https://ipsj.ixsq.nii.ac.jp/ej/index.php?active_action=repository_view_main_item_detail&page_id=13&block_id=8&item_id=160365&item_no=1>
-+ supplementary material (video) <https://supple.ixsq.nii.ac.jp/ej/?action=pages_view_main&active_action=repository_view_main_item_detail&item_id=9&item_no=1&page_id=13&block_id=16>
++ [Article @ IPSJ Digital Library](http://id.nii.ac.jp/1001/00160331/)
++ [Supplementary Material (Video Demo)](http://id.nii.ac.jp/1012/00000006/)
 
 [2] My (H. Tachibana's) Ph.D. Thesis, The University of Tokyo, Mar., 2014.
 
