@@ -8,14 +8,47 @@ For technical details, see the literatures below, especially the latest one [1].
 
 ## Related Articles
 
-[1] Tachibana, H., Mizuno, Y., Ono, N. and Sagayama, S.: A Real-time Audio-to-audio Karaoke Generation System for Monaural Recordings Based on Singing Voice Suppression and Key Conversion Techniques, Journal of Information Processing, Vol. 24, No. 3, pp. 470–482, May, 2016.
+```bibtex
+@article{tachibana2016ipsjjip,
+    author = {H. Tachibana and Y. Mizuno and N. Ono and S. Sagayama},
+    title = {A Real-time Audio-to-audio Karaoke Generation System for Monaural Recordings 
+            Based on Singing Voice Suppression and Key Conversion Techniques},
+    journal = {Journal of Information Processing},
+    publisher = {Information Processing Society of Japan},
+    volume = 24,
+    number = 3, 
+    pages = 470–-482, 
+    month = May,
+    year = 2016,
+    doi = {10.2197/ipsjjip.24.470}
+}
+```
 
-+ [Article @ IPSJ Digital Library](http://id.nii.ac.jp/1001/00160331/) ... Note: Article availble for free, but registration needed. It seems that the registration instruction is provided only in Japanese for now. If you need the article immediately, please contact the author (me) by email. 
++ [Article @ IPSJ Digital Library](http://id.nii.ac.jp/1001/00160331/)
 + [Supplementary Material (Video Demo)](http://id.nii.ac.jp/1012/00000006/)
 
-[2] My (H. Tachibana's) Ph.D. Thesis, The University of Tokyo, Mar., 2014.
+```bibtex
+@phdthesis{tachibana2014thesis,
+    author = {H. Tachibana},
+    title = {Music signal processing exploiting spectral fluctuation of singing voice 
+            using harmonic/percussive sound separation},
+    school = {The University of Tokyo},
+    month = Mar.,
+    year = 2014
+}
+```
 
-[3] Tachibana, H., Mizuno, Y., Ono, N. and Sagayama, S.: Euterpe: A Real-time Automatic Karaoke Generation System based on Singing Voice Suppression and Pitch Conversion, Proc. ASJ autumn meeting, Sep., 2012, **Non-refereed,** **in Japanese**
+```bibtex
+@inproceedings{tachibana2012asj,
+    author = {H. Tachibana and Y. Mizuno and N. Ono and S. Sagayama},
+    title = {Euterpe: A Real-time Automatic Karaoke Generation System 
+            based on Singing Voice Suppression and Pitch Conversion}, 
+    booktitle = "Proc. ASJ autumn meeting",
+    month = Sep.,
+    year = 2012,
+    note = "Non-refereed, in Japanese"
+}
+```
 
 ## Setting Up
 
