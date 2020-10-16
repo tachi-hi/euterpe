@@ -112,7 +112,6 @@ class phaseRecov{
 	Window w, iw, a;
 	TwoDimArray<double> iiinnn;
 
-//	ComplexSpectrogram cmpSpec;
 	SignalFragment sigBuf;
 	SlideBlock<std::complex<double> >*cmpSpec;
 

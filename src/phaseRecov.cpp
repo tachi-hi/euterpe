@@ -28,9 +28,7 @@ void phaseRecov::FFTWalloc(){
 	// strategy should not be "estimate" but should be "evaluated" or something
 	for (int j=0; j<bs; j++){
 		plans[j]     = fftw_plan_dft_r2c_1d(frame, inL+j*frame, outL+j*(frame/2+1), FFTW_ESTIMATE );
-//		plans[j]     = fftw_plan_dft_r2c_1d(frame, &(sigBuf[j][0]), reinterpret_cast<fftw_complex*>(cmpSpec[j]), FFTW_ESTIMATE );
 		inv_plans[j] = fftw_plan_dft_c2r_1d(frame, outL+j*(frame/2+1), inL+j*frame, FFTW_ESTIMATE );
-//		inv_plans[j] = fftw_plan_dft_c2r_1d(frame, reinterpret_cast<fftw_complex*>(cmpSpec[j]), &(sigBuf[j][0]), FFTW_ESTIMATE );
 	}
 
 
@@ -56,8 +54,6 @@ void phaseRecov::init(int frame_, int shift_, int ch_, int bs_){
 	}
 
 	//////// memory allocation
-///	refL   = new FLOAT[coeff+1];
-//	stateL = new FLOAT[coeff];
 	ampL   = new FLOAT[(frame/2+1)*bs];
 	sigL   = new FLOAT[frame+(bs-1)*shift]; // buffer sufficient?
 	bufL   = new FLOAT[frame];
@@ -71,7 +67,6 @@ void phaseRecov::init(int frame_, int shift_, int ch_, int bs_){
 	tframe=1;
 
 	cframe2=frame;
-//	update_cframe2();
 }
 
 
@@ -95,7 +90,6 @@ void phaseRecov::read_data_from_the_input(int modified_frame_length){
 	for(int i = 0; i < modified_frame_length; i++){
 		iinL[i] = read_buffer[i] * iw[i];
 	}
-//FLOAT tempo = (float)( panel->tempo.get() )/ 100.0;
 	input->rewind_stream_a_little((int)( (modified_frame_length - shift * 1 /*tempo*/) ));
 }
 
@@ -103,8 +97,6 @@ void phaseRecov::read_data_from_the_input(int modified_frame_length){
 // ------------------------------------------------------------------------------------
 void phaseRecov::callback_(void){
 	while(1){
-//		update_cframe2();
-
 		//////// block shift
 		if (++iframe == bs) iframe = 0; //bs may be blcok size
 		if (++tframe == bs) tframe = 0;
@@ -190,12 +182,6 @@ void phaseRecov::push_data_to_the_output(void){
 		output->push_data(tmp, shift);
 		delete[] tmp; //kokode error ga okiteru?
 }
-
-
-
-
-
-
 
 void phaseRecov::lastIteration(void){
 	for (int h = 0; h < frame; h++){

@@ -24,22 +24,9 @@ class TempoPitch: public phaseRecov{
 	}
 
 	void start(void){
-//		pthread_create(&master_thread,     &attr_RR,   (void*(*)(void*))TempoPitch::master_callback, this);		
 			pthread_create(&update_thread,     &attr_RR,   (void*(*)(void*))TempoPitch::update_callback, this);
 			pthread_create(&tempopitch_thread, &attr_FIFO, (void*(*)(void*))TempoPitch::callback, this);
 	}
-
-/*
-	static void* master_callback(void* arg){reinterpret_cast<TempoPitch*>(arg)->master_callback_();return 0;}	
-	void master_callback_(void){
-		while(1){
-//			pthread_create(&update_thread,     &attr_RR,   (void*(*)(void*))TempoPitch::update_callback, this);
-			pthread_create(&tempopitch_thread, &attr_FIFO, (void*(*)(void*))TempoPitch::callback, this);
-			//同期？
-			usleep(10000);
-		}
-	}
-*/
 
 	static void* callback(void* arg){	
 		reinterpret_cast<TempoPitch*>(arg)->callback_();
@@ -98,7 +85,6 @@ class TempoPitch: public phaseRecov{
 	SignalBuffer read_buffer;
 	SignalBuffer write_buffer;
 
-	pthread_t master_thread;
 	pthread_t tempopitch_thread;
 	pthread_t update_thread;
 	pthread_attr_t attr_FIFO;

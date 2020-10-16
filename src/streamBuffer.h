@@ -52,7 +52,6 @@ StreamBuffer<T>::StreamBuffer(){
   flag_not_received = true;
   data_stream.assign(MAX_SIZE, 0.0);
   pthread_mutex_init(&mutex, NULL);
-//  std::cerr << "streamBuffer initialized" << std::endl;
 }
 
 
@@ -108,11 +107,4 @@ void StreamBuffer<T>::rewind_stream_a_little(int length){
 template<typename T>
 inline void StreamBuffer<T>::overrun_check(void){
   overrun_flag = (size() > MAX_SIZE);
-/*
-
-  if(current_read_index > LONG_MAX / 2){ //約6時間に相当？しない？314時間相当？
-    std::cerr << "Error. The program is running for too long duration."<< std::endl;
-    exit(-1);
-  }
-*/
 }

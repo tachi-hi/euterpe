@@ -11,12 +11,13 @@
 #include <unistd.h> //usleep
 
 GUI::GUI(int argc, char **argv)
-	:	key(0),
+	:
+		key(0),
 		tempo(100),
 		volume(100),
-		quit(0),
+		runState(is_ready),
 		stop(0),
-		runState(is_ready)
+		quit(0)
 {
 	const char *command="wish TkTempoConv3.tcl";
 

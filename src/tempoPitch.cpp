@@ -1,5 +1,3 @@
-// 面倒なのでとりあえずコピペで済ます。簡単に整理はする。
-
 typedef double FLOAT;
 
 #include "tempoPitch.h"
@@ -286,22 +284,9 @@ void TempoPitch::callback_(void){
 		s = frame / 2 + 1;
 		MUTEX.lock();
 		for (int h = 0; h < s; h++){
-			//回転させるということ？
 			outL[iframe_ * (frame / 2 + 1) + h][0] = ioutL[h][0];
 			outL[iframe_ * (frame / 2 + 1) + h][1] = ioutL[h][1];
 			ampL[iframe_ * (frame / 2 + 1) + h] = sqrt(ioutL[h][0] * ioutL[h][0] + ioutL[h][1] * ioutL[h][1]);
-		}
-		for (int h = s; h < frame/2 + 1; h++){
-/*
-			outL[iframe_ * (frame / 2 + 1) + h][0] = 0.0;
-			outL[iframe_ * (frame / 2 + 1) + h][1] = 0.0;
-			ampL[iframe_ * (frame / 2 + 1) + h]=0.0;
-*/
-/*
-			outL[iframe_ * (frame / 2 + 1) + h][0] = ioutL[s-1][0] / (2 * h/frame);
-			outL[iframe_ * (frame / 2 + 1) + h][1] = ioutL[s-1][0] / (2 * h/frame);
-			ampL[iframe_ * (frame / 2 + 1) + h]=sqrt(ioutL[s-1][0] * ioutL[s-1][0] + ioutL[s-1][1] * ioutL[s-1][1])/  (2 * h/frame); //ここで計算する必要性は？
-*/
 		}
 		MUTEX.unlock();
 
@@ -336,7 +321,6 @@ void TempoPitch::read_data_from_the_input(int modified_frame_length){
 	for(int i = 0; i < modified_frame_length; i++){
 		iinL[i] = read_buffer[i] * iw[i];
 	}
-//FLOAT tempo = (float)( panel->tempo.get() )/ 100.0;
 	input->rewind_stream_a_little((int)( (modified_frame_length - shift * 1 /*tempo*/) ));
 }
 

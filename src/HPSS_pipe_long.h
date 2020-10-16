@@ -48,8 +48,6 @@ class HPSS_pipe_long : public HPSS_pipe{
 
 	void callback_(void){
 		while(1){
-			// ここを出力側の都合に合うように書き換える？
-				// 待つのではなく
 			while(!inBuffer->read_data(local_buffer_float, length)){
 				usleep(1000); //1[ms]
 			}
@@ -102,7 +100,7 @@ class HPSS_pipe_long : public HPSS_pipe{
 		double resolution = 16000. / length; // 16000 samp rate
 
 		for(int i = 0; i < length /2 + 1; i++){
-			H_buffer_double_spec[i] *= // 1.5 / (1 + abs(resolution * i - a) );
+			H_buffer_double_spec[i] *= 
 			  abs(resolution * i - a) < 100 ? 1.5
 			: abs(resolution * i - a) < 200 ? 1.2
 			: abs(resolution * i - a) < 300 ? 1.1
@@ -126,34 +124,13 @@ class HPSS_pipe_long : public HPSS_pipe{
 		int pitch;
 		double max = 0;
 		fftw_execute( forward_p );
-/*
-		for(int i = 0; i < length; i++){
-			idou[i] = 0;
-		}
-		for(int i = LOW; i < length - N ; i++){
-			for(int j = -N; j < N; j++){
-				idou[i] = abs(P_buffer_double_spec[i + j]) / 2 / N;
-			}
-		}
-*/
+
 		for(int i = LOW; i < 3 * LOW ; i++){
 			if(max < abs(P_buffer_double_spec[i]) + abs(P_buffer_double_spec[2 * i]) + abs(P_buffer_double_spec[i * 3])){
 				max = abs(P_buffer_double_spec[i]) + abs(P_buffer_double_spec[2 * i]) + abs(P_buffer_double_spec[i * 3]);
 				pitch = i;
 			}
 		}
-
-/*
-		for(int i = 0; i < LOW; i++){
-			P_buffer_double_spec[i] = 0.;
-		}
-		for(int i = 5; i < length - N; i++){
-			double tmp = abs(P_buffer_double_spec[i]);
-			P_buffer_double_spec[i] *= tmp > idou[i] + 0.1 ?
-				LOW / sqrt((double)(i)) / tmp :
-				0.;
-		}
-*/
 
 		for(int i = 1; i < length ; i++){
 			double tmp = abs(P_buffer_double_spec[i]);
@@ -179,9 +156,6 @@ class HPSS_pipe_long : public HPSS_pipe{
 
 	fftw_plan forward, inverse;
 	fftw_plan forward_p, inverse_p;
-
-//	double *H_buffer_double_spec;
-//	double *P_buffer_double_spec;
 
 	double a;
 

@@ -37,11 +37,4 @@ class GUI{
   pthread_t GUI_thread;
   pthread_attr_t attr;
 
-/*
-	static void * callback(void *arg){reinterpret_cast<GUI*>(arg)->callback_();return 0;}
-
-	void callback_(void){
-		gtk_main();
-	}
-*/
 };

@@ -59,7 +59,7 @@ public:
 			}
 			for(int t = 1; t < block_size-1; t++){
 				for(int k = KKK; k < frame_length/2-1; k++){
-//*
+
 					FLOAT w_h_tmp = w_h;// * k; // proportional to freq? -> x
 					FLOAT w_p_tmp = w_p;// / sqrt(k); // proportional to freq? -> x
 
@@ -71,14 +71,7 @@ public:
 					FLOAT P_C = 2 * (*maskP)[t][k] * (*W)[t][k] * (*W)[t][k];
 					(*H)[t][k] = (H_B + sqrt(H_B*H_B + 4 * H_A * H_C))/(2*H_A);
 					(*P)[t][k] = (P_B + sqrt(P_B*P_B + 4 * P_A * P_C))/(2*P_A);
-//*/
-/*
-					FLOAT tmp1 = sqrt((*H)[t-1][k]) + sqrt((*H)[t+1][k]);
-					FLOAT tmp2 = sqrt((*P)[t][k-1]) + sqrt((*P)[t][k+1]);
-					FLOAT bunbo = sqrt(tmp1 * tmp1 + tmp2 * tmp2 + 1e-100);
-					(*H)[t][k] = tmp1/bunbo * (*W)[t][k];
-					(*P)[t][k] = tmp2/bunbo * (*W)[t][k];
-//*/
+
 					FLOAT tmp = (*H)[t][k] * (*H)[t][k] + (*P)[t][k] * (*P)[t][k];
 					if(tmp > 0.0){
 						(*maskH)[t][k] = (*H)[t][k] * (*H)[t][k] /tmp;
@@ -102,20 +95,6 @@ public:
 		phaseSpec->pop(&(phase[0]));
 
 		for(int j = 0; j < frame_length/2; j++){
-/*
-			int tmp1, tmp2, tmp3, tmp4, tmp5;
-			tmp1 = tmp2 = tmp3 = tmp4 = tmp5 = 0;
-			if( j != 0 && j != 1){
-				tmp1 	= Hout[j - 2] > Pout[j - 2] ? 1 : 0;
-				tmp2 	= Hout[j - 1] > Pout[j - 1] ? 1 : 0;
-				tmp3 	= Hout[j + 0] > Pout[j + 0] ? 1 : 0;
-				tmp4 	= Hout[j + 1] > Pout[j + 1] ? 1 : 0;
-				tmp5 	= Hout[j + 2] > Pout[j + 2] ? 1 : 0;
-			}
-			FLOAT a = tmp1 + tmp2 + tmp3 + tmp4 + tmp5 > 2 ? 1 : 0;
-			Hout[j] = (amplitude[j]*a); //
-			Pout[j] = (amplitude[j]*(1 - a));
-*/
 			if(mask == binary){
 				Hout[j] = Hout[j] > Pout[j] ? 1 : 0;
 				Pout[j] = 1 - Hout[j];

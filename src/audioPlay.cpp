@@ -58,7 +58,7 @@ void AudioDevice::init(int n_channel_,
   outputParameters.device = Pa_GetDefaultOutputDevice(); /* default output device */
   outputParameters.channelCount = n_channel;
   outputParameters.sampleFormat = paFloat32;
-  //ここでエラーを返してくることがある。
+  // It sometimes returns an error.
   outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultHighOutputLatency;
   outputParameters.hostApiSpecificStreamInfo = NULL;
 

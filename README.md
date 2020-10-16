@@ -4,10 +4,13 @@ This is an automatic audio-to-audio karaoke generation system.
 It converts an ordinary music signal into a karaoke (vocal-off) in real time.
 it can also convert the key of the song.
 
-For technical details, see the literatures below, especially the latest one [1].
+For technical details, see the literatures below, especially the latest one (Tachibana 2016).
 
 ## Related Articles
 
+### Journal (IPSJ JIP)
++ [Article @ IPSJ Digital Library](http://id.nii.ac.jp/1001/00160331/)
++ [Supplementary Material (Video Demo)](http://id.nii.ac.jp/1012/00000006/)
 ```bibtex
 @article{tachibana2016ipsjjip,
     author = {H. Tachibana and Y. Mizuno and N. Ono and S. Sagayama},
@@ -24,8 +27,7 @@ For technical details, see the literatures below, especially the latest one [1].
 }
 ```
 
-+ [Article @ IPSJ Digital Library](http://id.nii.ac.jp/1001/00160331/)
-+ [Supplementary Material (Video Demo)](http://id.nii.ac.jp/1012/00000006/)
+### My PhD dissertation
 
 ```bibtex
 @phdthesis{tachibana2014thesis,
@@ -37,6 +39,8 @@ For technical details, see the literatures below, especially the latest one [1].
     year = 2014
 }
 ```
+
+### Conference Proceedings
 
 ```bibtex
 @inproceedings{tachibana2012asj,
