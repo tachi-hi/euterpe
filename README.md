@@ -99,3 +99,13 @@ Just run the `makefile` in `src`
    - <https://github.com/tachi-hi/HPSS> (In the emperical evaluations in the paper above, the codes in this repository were used.)
 - Related codes
     - <https://github.com/tachi-hi/slidingHPSS> (An older implementation of HPSS)
+
+## On the name "Euterpe"
+
+The name "Euterpe" is based on the Sagayama Lab's practice of adopting project names from Greek myth.
+If you enjoyed Euterpe, please check out the lab's other projects.
+
+- [Eurydice (Automatic Accompaniment System)](http://hil.t.u-tokyo.ac.jp/software/Eurydice/index-e.html)
+- [Orpheus (Automatic Composition from Japanese Lyrics)](http://www.orpheus-music.org/index.php)
+    - Melete (an Orpheus clone)
+    
