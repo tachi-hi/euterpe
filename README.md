@@ -9,8 +9,8 @@ For technical details, see the literatures below, especially the latest one (Tac
 ## Related Articles
 
 ### Journal (IPSJ JIP)
-+ [Article @ IPSJ Digital Library](http://id.nii.ac.jp/1001/00160331/)
-+ [Supplementary Material (Video Demo)](http://id.nii.ac.jp/1012/00000006/)
++ Paper: [[J-STAGE]](https://doi.org/10.2197/ipsjjip.24.470), [[IPSJ Digital Library]](http://id.nii.ac.jp/1001/00160331/), [[ResearchGate]](https://www.researchgate.net/publication/303181900_A_Real-time_Audio-to-audio_Karaoke_Generation_System_for_Monaural_Recordings_Based_on_Singing_Voice_Suppression_and_Key_Conversion_Techniques)
+    + [Supplementary Material (Video Demo)](http://id.nii.ac.jp/1012/00000006/)
 ```bibtex
 @article{tachibana2016ipsjjip,
     author = {H. Tachibana and Y. Mizuno and N. Ono and S. Sagayama},
