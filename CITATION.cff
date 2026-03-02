@@ -12,7 +12,7 @@ authors:
   - family-names: Sagayama
     given-names: Shigeki
 repository-code: "https://github.com/tachi-hi/euterpe"
-license: MIT
+license: BSD-3-Clause
 preferred-citation:
   type: article
   authors:
