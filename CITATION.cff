@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the following article."
+title: "EUTERPE"
+type: software
+authors:
+  - family-names: Tachibana
+    given-names: Hideyuki
+  - family-names: Mizuno
+    given-names: Yuichi
+  - family-names: Ono
+    given-names: Nobutaka
+  - family-names: Sagayama
+    given-names: Shigeki
+repository-code: "https://github.com/tachi-hi/euterpe"
+license: MIT
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Tachibana
+      given-names: Hideyuki
+    - family-names: Mizuno
+      given-names: Yuichi
+    - family-names: Ono
+      given-names: Nobutaka
+    - family-names: Sagayama
+      given-names: Shigeki
+  title: "A Real-time Audio-to-audio Karaoke Generation System for Monaural Recordings Based on Singing Voice Suppression and Key Conversion Techniques"
+  journal: "Journal of Information Processing"
+  publisher:
+    name: "Information Processing Society of Japan"
+  volume: 24
+  issue: 3
+  start: 470
+  end: 482
+  month: 5
+  year: 2016
+  doi: "10.2197/ipsjjip.24.470"
