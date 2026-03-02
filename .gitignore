@@ -6,4 +6,8 @@ obsolete
 
 .*
 !.gitignore
+!.github/
+
+build/
+vcpkg/
 

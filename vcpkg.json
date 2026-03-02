@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "fftw3",
+        "portaudio"
+    ]
+}

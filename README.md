@@ -65,31 +65,48 @@ For technical details, see the literatures below, especially the latest one (Tac
     + It may also be possible to build the system on other kind of distributions e.g. Fedora, but I have not verified it yet.
     + I have successfully built the codes on Mac OS X (Yosemite) using `clang++`
 
-### Libraries
+### Prerequisites
 
-You need to install following softwares first.
++ CMake (>= 3.15)
++ Git
++ Tcl/Tk (`wish` command)
+    + On macOS: `brew install tcl-tk`
+    + On Debian/Ubuntu: `sudo apt-get install tcl tk`
 
-    g++
-    tcl/tk
-    PortAudio (libportaudio-dev)
-    fftw3 (libfftw3-dev)
+Libraries (PortAudio and FFTW3) are automatically installed via [vcpkg](https://github.com/microsoft/vcpkg).
 
 ### Build
 
-Just run the `makefile` in `src`
+Run `build.sh` at the project root. It handles vcpkg setup, CMake configuration, and build automatically.
+
+    ./build.sh          # Release build (default)
+    ./build.sh debug    # Debug build
+    ./build.sh clean    # Remove build artifacts
+
+The executable will be created at `build/euterpe`.
+
+<details>
+<summary>Alternative: Manual build with system libraries</summary>
+
+If you prefer using system-installed libraries instead of vcpkg:
+
+    sudo apt-get install g++ libportaudio-dev libfftw3-dev  # Debian/Ubuntu
 
     cd src
     make
     cd -
 
+</details>
+
 ### Usage
 
 - Buy a 3.5mm-3.5mm audio cable.
 - Make your audio player (such as iPod) ready.
-- Connect one end of the cable to your audio player's output jack (3.5mm earphone jack), and the oppisite end to your PC's audio input jack.
+- Connect one end of the cable to your audio player's output jack (3.5mm earphone jack), and the opposite end to your PC's audio input jack.
 - Run the system by the command below.
 
-    ./euterpe
+      cd build
+      ./euterpe
 
 
 ## See Also
