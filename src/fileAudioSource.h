@@ -22,6 +22,7 @@ public:
 
     void start(StreamBuffer<float>& inBuffer) override;
     void stop() override;
+    bool is_eof() const override { return eof_.load(); }
 
 private:
     bool load();
@@ -33,4 +34,5 @@ private:
 
     std::vector<float>     samples_;      // whole file, mono, resampled to target_rate_
     std::atomic<size_t>    read_pos_{0};
+    std::atomic<bool>      eof_{false};
 };

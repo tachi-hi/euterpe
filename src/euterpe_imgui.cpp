@@ -121,6 +121,7 @@ int main(int argc, char** argv) {
     bool  running  = false;
     char  statusMsg[128] = "Ready";
     std::unique_ptr<AudioSource> source;
+    int   eof_drain_frames = 0;  // consecutive frames where outBuffer is empty after EOF
 
     // --- Main loop ---
     while (!glfwWindowShouldClose(window) && !params.getquit()) {
@@ -206,6 +207,22 @@ int main(int argc, char** argv) {
         ImGui::SameLine();
         if (ImGui::Button("Quit", ImVec2(90, 0))) {
             params.setquit();
+        }
+
+        // EOF auto-quit: file mode only.
+        // When all file samples have been fed to inBuffer, wait for the pipeline
+        // to drain (outBuffer empty for several consecutive frames), then quit.
+        if (running && source && source->is_eof()) {
+            // Suppress "Underflow." noise while the pipeline drains
+            AudioDevice::getInstance()->set_suppress_underflow(true);
+            if (outBuffer.size() < spb) {
+                if (++eof_drain_frames >= 8) {  // ~8 vsync frames ≈ 130ms @ 60 fps
+                    source->stop();
+                    params.setquit();
+                }
+            } else {
+                eof_drain_frames = 0;
+            }
         }
 
         // Status line

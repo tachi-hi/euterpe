@@ -40,6 +40,9 @@ public:
         input_provider_ = std::move(fn);
     }
 
+    // Suppress "Underflow." log (call after EOF to avoid noise during pipeline drain)
+    void set_suppress_underflow(bool v) { suppress_underflow_ = v; }
+
     int get_exec_count() { int tmp = trial_count_store; trial_count = 0; trial_count_store = 0; return tmp; }
 
 private:
@@ -56,6 +59,7 @@ private:
                   const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags);
 
     std::function<void(int)> input_provider_;  // synthetic mic input (file mode)
+    bool suppress_underflow_{false};
 
     int  trial_count{0};
     int  trial_count_store{0};

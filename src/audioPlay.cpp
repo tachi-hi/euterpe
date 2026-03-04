@@ -103,7 +103,8 @@ int AudioDevice::CallBack_(const void* inputBuffer, void* outputBuffer,
     if (!outBuffer->has_not_received_any_data()) {
         // CV で待機（最大 30ms）。タイムアウト時はゼロ埋めのまま返す。
         if (!outBuffer->wait_and_read(out, n, std::chrono::milliseconds(30))) {
-            std::cerr << "Underflow." << std::endl;
+            if (!suppress_underflow_)
+                std::cerr << "Underflow." << std::endl;
         }
     }
     return 0;

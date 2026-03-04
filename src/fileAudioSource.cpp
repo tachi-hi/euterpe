@@ -76,16 +76,19 @@ void FileAudioSource::start(StreamBuffer<float>& inBuffer) {
     dev->set_input_provider([this, &inBuffer](int n) {
         const size_t pos   = read_pos_.fetch_add(n);
         const size_t total = samples_.size();
-        if (pos >= total) return;  // EOF — output side drains naturally
+        if (pos >= total) {
+            eof_.store(true);
+            return;  // EOF — stop feeding; main loop handles drain + quit
+        }
 
         const int avail = static_cast<int>(std::min<size_t>(n, total - pos));
         inBuffer.push_data(samples_.data() + pos, avail);
 
         if (avail < n) {
-            // Pad with zeros for the last partial chunk at EOF
-            const float zeros[]{};  // default-init → 0
+            // Last partial chunk: pad with zeros and mark EOF
             std::vector<float> pad(n - avail, 0.f);
             inBuffer.push_data(pad.data(), n - avail);
+            eof_.store(true);
         }
     });
 
