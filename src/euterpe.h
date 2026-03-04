@@ -8,7 +8,6 @@
 #include "HPSS_pipe.h"
 #include "gui.h"
 #include "audioPlay.h"
-#include "myMutex.h"
 #include "tempoPitch.h"
 #include "streamAdder.h"
 

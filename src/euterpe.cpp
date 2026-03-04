@@ -17,6 +17,8 @@
 #include <vector>
 #include <cstdlib>
 #include <cmath>
+#include <thread>
+#include <chrono>
 
 #include <portaudio.h>
 #include <pthread.h>
@@ -26,6 +28,15 @@
 
 int main(int argc, char **argv){
 	const int freq = 16000;
+
+	// オプション解析: -m / --max-iter で高品質モード（反復数無制限）を有効化
+	bool max_iter_mode = false;
+	for(int i = 1; i < argc; i++){
+		if(std::string(argv[i]) == "-m" || std::string(argv[i]) == "--max-iter"){
+			max_iter_mode = true;
+			std::cerr << "[euterpe] max-iteration mode enabled\n";
+		}
+	}
 
 	// declare stream buffer ------------------------------------------------------------
 	StreamBuffer<float> inBuffer;
@@ -62,6 +73,11 @@ int main(int argc, char **argv){
 	TempoPitch converter;
 	converter.init(1024 * 2, 128 * 2, 1 /* channel */,  7 /* block */, 15 /* coeff */, freq, &panel);//param? // frame should be very long
 	converter.setBuffer(&Buffer_karaoke, &outBuffer);
+	if(max_iter_mode){
+		HPSS_short.setMaxIterations(-1);
+		HPSS_long .setMaxIterations(-1);
+		converter  .setMaxIterations(-1); // 次フレームまで無制限反復
+	}
 
 	// start  ---------------------------------------------------------------------------
 	audio_thread->start();
@@ -75,7 +91,7 @@ int main(int argc, char **argv){
 	int sec = 0;
 	while(1){
 		sec++;
-		usleep(1000000);
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 		fprintf(stderr, "%3d[ms]  %3d[ms]  %3d[ms] \t HPSS: short %d[times/s] long %d[times/s] phase %d[times/s] audio trial %d \n",
 			(int)((double)inBuffer.size() / freq * 1000),
 			(int)((double)Buffer_karaoke.size() / freq * 1000),

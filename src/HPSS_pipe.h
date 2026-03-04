@@ -4,40 +4,34 @@
 
 #include "streamBuffer.h"
 #include "HPSS_Idiv.hpp"
-#include <unistd.h> //usleep
+#include "scalar.h"
 #include <pthread.h>
-#include "myMutex.h"
+#include <mutex>
+#include <algorithm>
+#include <vector>
 
 #include<iostream>
 
 class HPSS_pipe : public HPSS_Idiv{
  public:
- HPSS_pipe(int a, int length, int shift, double d, double e)
-	 : HPSS_Idiv(a,length,shift,d,e){
-		local_buffer_float = new float[length];
-		H_buffer_float     = new float[shift];
-		P_buffer_float     = new float[shift];
-		local_buffer_double = new double[length];
-		H_buffer_double     = new double[length];
-		P_buffer_double     = new double[length];
-		H_prev = new float[shift];
-		P_prev = new float[shift];
-		this->shift = shift;
-		this->length = length;
+ HPSS_pipe(int a, int length, int shift, Scalar d, Scalar e)
+	 : HPSS_Idiv(a, length, shift, d, e),
+	   shift{shift}, length{length},
+	   local_buffer_float(length, 0.0f),
+	   H_buffer_float(shift, 0.0f),
+	   P_buffer_float(shift, 0.0f),
+	   local_buffer_double(length, 0.0),
+	   H_buffer_double(length, 0.0),
+	   P_buffer_double(length, 0.0),
+	   H_prev(shift, 0.0f),
+	   P_prev(shift, 0.0f),
+	   loop_flag{false}
+	{
 	  pthread_attr_init(&attr);
 	  pthread_attr_setschedpolicy(&attr, SCHED_RR);
+	}
 
-//		loop_flag = true; // Manually Modify around this if you want to change the iteration strategy written in the paper
-		loop_flag = false;
-	}
-	virtual ~HPSS_pipe(){
-		delete[] local_buffer_double;
-		delete[] H_buffer_double;
-		delete[] P_buffer_double;
-		delete[] local_buffer_float;
-		delete[] H_buffer_float;
-		delete[] P_buffer_float;
-	}
+	virtual ~HPSS_pipe() = default;
 
 	void setBuffer(StreamBuffer<float> *in,
 		 StreamBuffer<float> *H,
@@ -46,6 +40,11 @@ class HPSS_pipe : public HPSS_Idiv{
 		outBuffer_H = H;
 		outBuffer_P = P;
 	}
+
+	// 反復回数の上限を設定する。
+	// n >= 1 : 1フレームあたりの最大反復回数（デフォルト 3）
+	// n == -1: 次の入力フレームが届くまで無制限に反復（高品質モード）
+	void setMaxIterations(int n) { max_outer_loops = n; }
 
 	void start(void){
 	  pthread_create(&update_thread, &attr, (void*(*)(void*))update_callback, this);
@@ -68,21 +67,25 @@ class HPSS_pipe : public HPSS_Idiv{
 
 	virtual void callback_(void){
 		while(1){
-			while(!inBuffer->read_data(local_buffer_float, length)){
-				usleep(1000); //1[ms]ま
-			}
+			while(!inBuffer->wait_and_read(local_buffer_float.data(), length))
+				; // ブロッキング読み出し（100ms タイムアウト後リトライ）
 
 			inBuffer->rewind_stream_a_little(shift);
 
-			for(int i = 0; i < length; i++){
-				local_buffer_double[i] = static_cast<double>(local_buffer_float[i]);
-			}
+			std::transform(local_buffer_float.begin(), local_buffer_float.end(),
+				local_buffer_double.begin(),
+				[](float v){ return static_cast<Scalar>(v); });
 
-			this->push_new_data(local_buffer_double);
+			this->push_new_data(local_buffer_double.data());
 
 			if(!loop_flag){
-//				this->update(5);  // Manually modify around here if you want to change the number of iteration
-				this->update(1);
+				// 次フレームが届くまでの空き時間を追加反復に使う（品質向上）
+				int count = 0;
+				do {
+					this->update(1);
+					++count;
+				} while(inBuffer->size() < length
+				        && (max_outer_loops < 0 || count < max_outer_loops));
 			}
 
 			if(!this->filled()){
@@ -90,19 +93,22 @@ class HPSS_pipe : public HPSS_Idiv{
 			}
 
 			MUTEX.lock();
-			this->pop(H_buffer_double, P_buffer_double);
+			this->pop(H_buffer_double.data(), P_buffer_double.data());
 			MUTEX.unlock();
 
-			for(int i = 0; i < shift; i++){
-				H_buffer_float[i] = static_cast<float>(H_buffer_double[i]) + H_prev[i];
-				P_buffer_float[i] = static_cast<float>(P_buffer_double[i]) + P_prev[i];
-			}
-			for(int i = shift; i < length; i++){
-				H_prev[i - shift] = static_cast<float>(H_buffer_double[i]);
-				P_prev[i - shift] = static_cast<float>(P_buffer_double[i]);
-			}
-			outBuffer_H->push_data(H_buffer_float, shift);
-			outBuffer_P->push_data(P_buffer_float, shift);
+			std::transform(H_buffer_double.begin(), H_buffer_double.begin() + shift,
+				H_prev.begin(), H_buffer_float.begin(),
+				[](Scalar h, float p){ return static_cast<float>(h) + p; });
+			std::transform(P_buffer_double.begin(), P_buffer_double.begin() + shift,
+				P_prev.begin(), P_buffer_float.begin(),
+				[](Scalar p, float prev){ return static_cast<float>(p) + prev; });
+			std::transform(H_buffer_double.begin() + shift, H_buffer_double.end(),
+				H_prev.begin(), [](Scalar v){ return static_cast<float>(v); });
+			std::transform(P_buffer_double.begin() + shift, P_buffer_double.end(),
+				P_prev.begin(), [](Scalar v){ return static_cast<float>(v); });
+
+			outBuffer_H->push_data(H_buffer_float.data(), shift);
+			outBuffer_P->push_data(P_buffer_float.data(), shift);
 	}
 }
 
@@ -114,20 +120,23 @@ class HPSS_pipe : public HPSS_Idiv{
 	StreamBuffer<float> *outBuffer_H;
 	StreamBuffer<float> *outBuffer_P;
 
-	float *local_buffer_float;
-	float *H_buffer_float;
-	float *P_buffer_float;
+	std::vector<float>  local_buffer_float;
+	std::vector<float>  H_buffer_float;
+	std::vector<float>  P_buffer_float;
 
-	double *local_buffer_double;
-	double *H_buffer_double;
-	double *P_buffer_double;
+	std::vector<Scalar> local_buffer_double;
+	std::vector<Scalar> H_buffer_double;
+	std::vector<Scalar> P_buffer_double;
 
-	float *H_prev;
-	float *P_prev;
+	std::vector<float>  H_prev;
+	std::vector<float>  P_prev;
 	bool loop_flag;
 
 	pthread_t update_thread;
 	pthread_t thread;
 	pthread_attr_t attr;
-	myMutex<int> MUTEX;
+	std::mutex MUTEX;
+
+	// デフォルト 3 回。-1 で次フレームまで無制限。
+	int max_outer_loops{3};
 };

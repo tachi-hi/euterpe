@@ -1,6 +1,13 @@
 {
     "dependencies": [
         "fftw3",
-        "portaudio"
+        "portaudio",
+        "libsndfile",
+        "glfw3",
+        {
+            "name": "imgui",
+            "features": ["glfw-binding", "opengl3-binding"]
+        },
+        "nativefiledialog-extended"
     ]
 }

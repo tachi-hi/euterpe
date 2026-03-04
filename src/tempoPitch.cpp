@@ -1,13 +1,9 @@
-typedef double FLOAT;
-
 #include "tempoPitch.h"
 #include <cmath>
-#include <unistd.h>
-//bool flag;
+#include <algorithm>
+#include <vector>
 
 TempoPitch::TempoPitch(){
-		exec_count = 0;
-		exec_count_total = 0;
 		second = 0;
 		pthread_attr_init(&attr_FIFO);
 		pthread_attr_init(&attr_RR);
@@ -16,7 +12,13 @@ TempoPitch::TempoPitch(){
 }
 
 TempoPitch::~TempoPitch(){
-	//	delete  etc
+	for (int j = 0; j < bs; j++) {
+		if (plans[j])     Fftw::destroy(plans[j]);
+		if (inv_plans[j]) Fftw::destroy(inv_plans[j]);
+	}
+	if (iniL)  Fftw::destroy(iniL);
+	if (iiniL) Fftw::destroy(iiniL);
+	if (iniL2) Fftw::destroy(iniL2);
 }
 
 // ------------------------------------------------------------------------------------
@@ -99,41 +101,39 @@ void TempoPitch::update_cframe2(){
 		cframe2 = tmp;
 		std::cerr << tmp << " " << (int)(SetPitch(panel->key.get()) * frame) << " " << (int)(panel->key.get()) << " " << frame << " " << std::endl;
 
-		fftw_destroy_plan(iniL2);
-		iniL2 = fftw_plan_dft_r2c_1d(cframe2, iinL, ioutL, FFTW_ESTIMATE);//
-		for (int h=0; h<cframe2; h++){
-			iw[h] = (0.5 - 0.5 * cos( 2.0 * M_PI * h / cframe2));
-		}
+		Fftw::destroy(iniL2);
+		iniL2 = Fftw::plan_dft_r2c_1d(cframe2, iinL.data(), ioutL.get(), FFTW_ESTIMATE);
+		int h = 0;
+		std::generate_n(iw.begin(), cframe2,
+			[&]{ return Scalar(0.5) - Scalar(0.5) * std::cos(Scalar(2.0 * M_PI) * h++ / cframe2); });
 	}
 }
 
 // ------------------------------------------------------------------------------------
 // FFTW setting
 void TempoPitch::FFTWalloc(){
-	inL   = new FLOAT[frame * bs];
-	sigBuf.init(bs, frame); // inL
-	outL  = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*(frame/2+1)*bs);
-	cmpSpec.init(bs, frame / 2 + 1); //outL
+	inL.assign(frame * bs, 0.0);
+	sigBuf.init(bs, frame);
+	outL.reset((Fftw::complex*) Fftw::alloc(sizeof(Fftw::complex)*(frame/2+1)*bs));
+	cmpSpec.init(bs, frame / 2 + 1);
 
-	plans.alloc(bs);
-	inv_plans.alloc(bs);
+	plans.assign(bs, nullptr);
+	inv_plans.assign(bs, nullptr);
 	for (int j=0; j<bs; j++){
-		plans[j]     = fftw_plan_dft_r2c_1d(frame, inL+j*frame, outL+j*(frame/2+1), FFTW_ESTIMATE );
-		inv_plans[j] = fftw_plan_dft_c2r_1d(frame, outL+j*(frame/2+1), inL+j*frame, FFTW_ESTIMATE );
+		plans[j]     = Fftw::plan_dft_r2c_1d(frame, inL.data()+j*frame, outL.get()+j*(frame/2+1), FFTW_ESTIMATE);
+		inv_plans[j] = Fftw::plan_dft_c2r_1d(frame, outL.get()+j*(frame/2+1), inL.data()+j*frame, FFTW_ESTIMATE);
 	}
 
+	iinL.assign(frame * 4, 0.0);
+	ioutL.reset((Fftw::complex*) Fftw::alloc(sizeof(Fftw::complex)*(frame*2+1)));
 
-	iinL  = new FLOAT[frame * 4];
-	ioutL = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*(frame*2+1));
-
-	iniL  = fftw_plan_dft_r2c_1d(frame, iinL, ioutL, FFTW_ESTIMATE);
-	iiniL = fftw_plan_dft_c2r_1d(frame, ioutL, iinL, FFTW_ESTIMATE);
-	iniL2 = fftw_plan_dft_r2c_1d(frame, iinL, ioutL, FFTW_ESTIMATE);
-
+	iniL  = Fftw::plan_dft_r2c_1d(frame, iinL.data(), ioutL.get(), FFTW_ESTIMATE);
+	iiniL = Fftw::plan_dft_c2r_1d(frame, ioutL.get(), iinL.data(), FFTW_ESTIMATE);
+	iniL2 = Fftw::plan_dft_r2c_1d(frame, iinL.data(), ioutL.get(), FFTW_ESTIMATE);
 }
 
 // ------------------------------------------------------------------------------------
-void TempoPitch::init(int frame_, int shift_, int ch_, int bs_, int coeff_, int freq_, GUI *panel_){
+void TempoPitch::init(int frame_, int shift_, int ch_, int bs_, int coeff_, int freq_, GUIBase *panel_){
 	frame = frame_;
 	shift = shift_;
 	bs = bs_;
@@ -146,13 +146,13 @@ void TempoPitch::init(int frame_, int shift_, int ch_, int bs_, int coeff_, int 
 	}
 
 	//////// memory allocation
-	refL   = new FLOAT[coeff+1];
-	stateL = new FLOAT[coeff];
-	ampL   = new FLOAT[(frame/2+1)*bs];
-	sigL   = new FLOAT[frame+(bs-1)*shift]; // sufficient?
-	bufL   = new FLOAT[frame];
+	refL.assign(coeff+1, 0.0);
+	stateL.assign(coeff, 0.0);
+	ampL.assign((frame/2+1)*bs, 0.0);
+	sigL.assign(frame+(bs-1)*shift, 0.0);
+	bufL.assign(frame, 0.0);
 
-	read_buffer.alloc(frame * 2);
+	read_buffer.assign(frame * 2, 0.0f);
 
 	FFTWalloc();
 	generateWindow();
@@ -167,34 +167,34 @@ void TempoPitch::init(int frame_, int shift_, int ch_, int bs_, int coeff_, int 
 
 // ------------------------------------------------------------------------------------
 void TempoPitch::generateWindow(void){
-	w. alloc(frame);
-	iw.alloc(frame * 4);
-	a. alloc(frame);
-	for (int h=0; h<frame; h++){
-		w[h]  = 0.5 - 0.5 * cos(2.0 * M_PI * h / frame);
-		iw[h] = w[h];
-		a[h]  = w[h] / frame / (frame/shift) * 8 / 3;
-	}
+	w.assign(frame, 0.0);
+	iw.assign(frame * 4, 0.0);
+	a.assign(frame, 0.0);
+
+	int h = 0;
+	std::generate(w.begin(), w.end(),
+		[&]{ return Scalar(0.5) - Scalar(0.5) * std::cos(Scalar(2.0 * M_PI) * h++ / frame); });
+	std::copy(w.begin(), w.end(), iw.begin()); // iw の後半 3*frame 要素はゼロのまま
+	const auto ca = Scalar(1.0) / frame / (frame / shift) * Scalar(8.0 / 3.0);
+	std::transform(w.begin(), w.end(), a.begin(), [ca](Scalar v){ return v * ca; });
 }
 
 // ------------------------------------------------------------------------------------
 // timbre fixed
 void TempoPitch::pitch_modify(void){
-	SigRef2(iinL,cframe2,coeff,refL); // envelope and residual
+	SigRef2(iinL.data(), cframe2, coeff, refL.data()); // envelope and residual
 
-	fftw_execute(iniL2); // FFT residual
+	Fftw::execute(iniL2); // FFT residual
 	if (frame > cframe2){
 		for (int h = cframe2 / 2 + 1; h < frame / 2 + 1; h++){
 			ioutL[h][0] = ioutL[h][1] = 0.0;
 		}
 	}
 
-	fftw_execute(iiniL);// iFFT resampled residual
-	for(int h = 0; h < coeff; h++){
-		stateL[h]=0;
-	}
+	Fftw::execute(iiniL);// iFFT resampled residual
+	std::fill(stateL.begin(), stateL.end(), Scalar(0));
 	for(int h = 0; h < frame; h++){
-		iinL[h] = refsig(coeff, refL, stateL, iinL[h]) / frame; // resynthesize the signal
+		iinL[h] = refsig(coeff, refL.data(), stateL.data(), iinL[h]) / frame;
 	}
 }
 
@@ -218,22 +218,22 @@ void TempoPitch::update_callback_(void){
 // apply inverse FFT for each frame
 void TempoPitch::inverseFFT(void){
 	for (int j = 0; j < bs; j++){
-		fftw_execute( inv_plans[j] );
-		for (int h = 0; h < frame; h++){
-			inL[j * frame + h] *= a[h];
-		}
+		Fftw::execute( inv_plans[j] );
+		std::transform(inL.begin() + j*frame, inL.begin() + (j+1)*frame,
+			a.begin(), inL.begin() + j*frame,
+			[](Scalar s, Scalar w){ return s * w; });
 	}
 }
 
 void TempoPitch::iFFTaddition(void){
-	for (int i = 0; i < frame + (bs - 1) * shift; i++){
-		sigL[i] = i < frame - shift ? bufL[i] : 0.;
-	}
+	std::copy_n(bufL.begin(), frame - shift, sigL.begin());
+	std::fill(sigL.begin() + (frame - shift), sigL.end(), Scalar(0));
+
 	for (int j = 0; j < bs; j++){
 		int offset1 = (tframe_ + j >= bs) ? (tframe_ + j - bs) * frame : (tframe_ + j) * frame;
-		for (int h = 0; h < frame; h++){
-			sigL[j * shift + h] += inL[offset1 + h];
-		}
+		std::transform(sigL.begin() + j*shift, sigL.begin() + j*shift + frame,
+			inL.begin() + offset1, sigL.begin() + j*shift,
+			std::plus<Scalar>{});
 	}
 }
 
@@ -241,15 +241,15 @@ void TempoPitch::iFFTaddition(void){
 void TempoPitch::iteration2(void){
 	for (int j = 0; j < bs; j++){
 		int offset2 = (j - tframe_) * shift + ((j < tframe_) ? bs * shift : 0 );
-		for (int h = 0; h < frame; h++){
-			inL[j * frame + h] = w[h] * sigL[h + offset2];
-		}
-		fftw_execute(plans[j]);
+		std::transform(w.begin(), w.end(),
+			sigL.begin() + offset2, inL.begin() + j*frame,
+			[](Scalar w, Scalar s){ return w * s; }); //window
+		Fftw::execute(plans[j]);
 		int offset1 = j * (frame / 2 + 1);
 
 		for (int h = 0; h < frame / 2 + 1; h++){
-			double tmp = sqrt(outL[offset1+h][0]*outL[offset1+h][0]+outL[offset1+h][1]*outL[offset1+h][1]);
-			if (tmp < 1e-100){
+			auto tmp = std::sqrt(outL[offset1+h][0]*outL[offset1+h][0]+outL[offset1+h][1]*outL[offset1+h][1]);
+			if (tmp < Scalar(1e-100)){
 				outL[offset1 + h][0] = 0.0;
 				outL[offset1 + h][1] = 0.0;
 			}else{
@@ -278,7 +278,7 @@ void TempoPitch::callback_(void){
 			pitch_modify();
 		}
 
-		fftw_execute(iniL);
+		Fftw::execute(iniL);
 
 		int s = (frame < cframe2 ? frame : cframe2) / 2 + 1;
 		s = frame / 2 + 1;
@@ -286,41 +286,45 @@ void TempoPitch::callback_(void){
 		for (int h = 0; h < s; h++){
 			outL[iframe_ * (frame / 2 + 1) + h][0] = ioutL[h][0];
 			outL[iframe_ * (frame / 2 + 1) + h][1] = ioutL[h][1];
-			ampL[iframe_ * (frame / 2 + 1) + h] = sqrt(ioutL[h][0] * ioutL[h][0] + ioutL[h][1] * ioutL[h][1]);
+			ampL[iframe_ * (frame / 2 + 1) + h] = std::sqrt(ioutL[h][0] * ioutL[h][0] + ioutL[h][1] * ioutL[h][1]);
 		}
 		MUTEX.unlock();
 
 		MUTEX.lock();
-
-		const int NNN = 1;
-		for(int i = 0; i < NNN - 1; ++i){
-			exec_count++;
-			exec_count_total++;
-			inverseFFT();
-			iFFTaddition();
-			iteration2();
+		// 次フレームが届くまでの空き時間を追加反復に使う（品質向上）
+		// 出力バッファが枯渇しそうな場合は早めに出力して音飛びを防ぐ
+		{
+			int loop_count = 0;
+			do {
+				inverseFFT(); iFFTaddition(); iteration2(); exec_count++; exec_count_total++;
+				inverseFFT(); iFFTaddition(); iteration2(); exec_count++; exec_count_total++;
+				inverseFFT(); iFFTaddition();
+				++loop_count;
+				// 終了条件:
+				//   (a) 次フレームが届いた
+				//   (b) 出力バッファが危険水域（2フレーム＝32ms未満）
+				//   (c) ループ上限に達した（max_outer_loops >= 0 のとき）
+				if(input->size() >= cframe2
+				   || output->size() < shift * 2
+				   || (max_outer_loops >= 0 && loop_count >= max_outer_loops)){
+					lastIteration();
+					iteration2(); exec_count++; exec_count_total++;
+					break;
+				}
+				iteration2(); exec_count++; exec_count_total++;
+			} while(true);
 		}
-		exec_count++;
-		exec_count_total++;
-		inverseFFT();
-		iFFTaddition();
-
-		if(output->size() < 16000 * 0.5){ // if less than 0.5 sec
-			lastIteration();
-		}
-		iteration2();
 		MUTEX.unlock();
 	}
 }
 
 // ------------------------------------------------------------------------------------
 void TempoPitch::read_data_from_the_input(int modified_frame_length){
-	while(!input->read_data(&(read_buffer[0]), modified_frame_length)){
-			usleep(1000);
-	}
-	for(int i = 0; i < modified_frame_length; i++){
-		iinL[i] = read_buffer[i] * iw[i];
-	}
+	while(!input->wait_and_read(read_buffer.data(), modified_frame_length))
+		; // ブロッキング読み出し（100ms タイムアウト後リトライ）
+	std::transform(read_buffer.begin(), read_buffer.begin() + modified_frame_length,
+		iw.begin(), iinL.begin(),
+		[](float r, Scalar w) -> Scalar { return r * w; });
 	input->rewind_stream_a_little((int)( (modified_frame_length - shift * 1 /*tempo*/) ));
 }
 
@@ -331,21 +335,17 @@ void TempoPitch::read_data_from_the_input(int modified_frame_length){
 
 
 void TempoPitch::lastIteration(void){
-	for (int h = 0; h < frame; h++){
-		bufL[h] += inL[tframe_ * frame + h]; 
-	}
+	std::transform(bufL.begin(), bufL.end(),
+		inL.begin() + tframe_*frame, bufL.begin(), std::plus<Scalar>{});
 	push_data_to_the_output();
 	// shift
-	for(int h = 0; h < frame; h++){
-		bufL[h] = h < frame - shift ? bufL[h + shift] : 0;
-	}
+	std::copy_n(bufL.begin() + shift, frame - shift, bufL.begin());
+	std::fill(bufL.begin() + (frame - shift), bufL.end(), Scalar(0));
 }
 
 void TempoPitch::push_data_to_the_output(void){
-		float *tmp = new float[shift];
-		for(int i = 0; i < shift; i++){
-			tmp[i] = static_cast<float>(bufL[i]);
-		}
-		output->push_data(tmp, shift);
-		delete[] tmp; //kokode error ga okiteru?
+	std::vector<float> tmp(shift);
+	std::transform(bufL.begin(), bufL.begin() + shift, tmp.begin(),
+		[](Scalar v){ return static_cast<float>(v); });
+	output->push_data(tmp.data(), shift);
 }
