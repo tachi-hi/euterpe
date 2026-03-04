@@ -8,6 +8,7 @@
 
 #pragma once
 #include <portaudio.h>
+#include <functional>
 #include "streamBuffer.h"
 
 class AudioDevice {
@@ -31,6 +32,14 @@ public:
     void stop();
     void kill();
 
+    // Set a synthetic input provider called from the PortAudio callback.
+    // The function receives the number of samples and should push that many
+    // samples into the target StreamBuffer directly.
+    // Pass nullptr to clear (revert to hardware input or output-only mode).
+    void set_input_provider(std::function<void(int)> fn) {
+        input_provider_ = std::move(fn);
+    }
+
     int get_exec_count() { int tmp = trial_count_store; trial_count = 0; trial_count_store = 0; return tmp; }
 
 private:
@@ -45,6 +54,8 @@ private:
     }
     int CallBack_(const void*, void*, unsigned long,
                   const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags);
+
+    std::function<void(int)> input_provider_;  // synthetic mic input (file mode)
 
     int  trial_count{0};
     int  trial_count_store{0};

@@ -89,8 +89,10 @@ int AudioDevice::CallBack_(const void* inputBuffer, void* outputBuffer,
     trial_count_store = trial_count++;
     const auto n = static_cast<int>(n_channel * framesPerBuffer);
 
-    // Feed pipeline input from hardware mic (skipped in output-only mode)
-    if (input_enabled_ && inBuffer) {
+    // Feed pipeline input: file provider takes priority over hardware mic
+    if (input_provider_) {
+        input_provider_(n);
+    } else if (input_enabled_ && inBuffer) {
         inBuffer->push_data(reinterpret_cast<const float*>(inputBuffer), n);
     }
 
