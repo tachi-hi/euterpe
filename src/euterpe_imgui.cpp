@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
             if (ImGui::Button("Browse...")) {
 #ifndef NO_NFD
                 nfdu8char_t* outPath = nullptr;
-                nfdu8filteritem_t filters[] = {{"Audio files", "wav,flac,ogg,aif,aiff"}};
+                nfdu8filteritem_t filters[] = {{"Audio files", "wav,flac,ogg,aif,aiff,mp3"}};
                 if (NFD_Init() == NFD_OKAY) {
                     if (NFD_OpenDialogU8(&outPath, filters, 1, nullptr) == NFD_OKAY) {
                         strncpy(filePath, outPath, sizeof(filePath) - 1);
