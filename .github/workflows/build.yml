@@ -2,14 +2,45 @@ name: build
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        preset: [default, float]
     steps:
       - uses: actions/checkout@v4
-      - name: Build
-        run: ./build.sh
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential cmake pkg-config ninja-build \
+            curl zip unzip tar \
+            autoconf autoconf-archive automake libtool libltdl-dev \
+            libasound-dev \
+            libgl-dev libx11-dev libxrandr-dev libxinerama-dev \
+            libxcursor-dev libxi-dev libxext-dev \
+            libgtk-3-dev
+
+      - name: Verify build tools
+        run: gcc --version && g++ --version && cmake --version && ninja --version
+
+      - name: Cache vcpkg binary cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vcpkg
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-
+
+      - name: Build (${{ matrix.preset }})
+        env:
+          CC: gcc
+          CXX: g++
+          CMAKE_GENERATOR: Ninja
+        run: ./build.sh ${{ matrix.preset }}

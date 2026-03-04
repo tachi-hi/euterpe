@@ -1,72 +1,77 @@
-/*******************************************************************/
-// PortAudio wrapper
-// singleton
+// audioPlay.h
+//
+// PortAudio wrapper (Singleton).
+// Supports full-duplex (line-in + out) and output-only mode (for file input).
+// Pass nullptr for inBuffer to init() to enable output-only mode.
 //
 // (c) 2010 Aug. Hideyuki Tachibana. tachibana@hil.t.u-tokyo.ac.jp
-/*******************************************************************/
 
-
+#pragma once
 #include <portaudio.h>
+#include <functional>
 #include "streamBuffer.h"
 
-#ifndef AUDIO_PLAY_H
-#define AUDIO_PLAY_H
+class AudioDevice {
+private: // Singleton Pattern (Meyers' Singleton)
+    AudioDevice();
+    ~AudioDevice();
+    AudioDevice(const AudioDevice&)            = delete;
+    AudioDevice& operator=(const AudioDevice&) = delete;
 
-class AudioDevice{
- private: // Singleton Pattern
-  AudioDevice();
-  virtual ~AudioDevice();
-  AudioDevice(const AudioDevice& tmp);
-  AudioDevice& operator=(AudioDevice& tmp);
-  static AudioDevice *instance;
+public:
+    static AudioDevice* getInstance() {
+        static AudioDevice instance;
+        return &instance;
+    }
 
- public:
-  //Singleton pattern
-  static AudioDevice* getInstance(void){
-    if(!instance)
-      instance = new AudioDevice;
-    return instance;
-  }
+    // Pass inBuffer=nullptr to enable output-only mode (e.g., for file input).
+    void init(int n_ch, int sr, int spb,
+              StreamBuffer<float>* inBuffer,
+              StreamBuffer<float>* outBuffer);
+    void start();
+    void stop();
+    void kill();
 
-  void init(int, int, int, StreamBuffer<float>*, StreamBuffer<float>*);
-  void start();
-  void stop();
-  void kill();
+    // Set a synthetic input provider called from the PortAudio callback.
+    // The function receives the number of samples and should push that many
+    // samples into the target StreamBuffer directly.
+    // Pass nullptr to clear (revert to hardware input or output-only mode).
+    void set_input_provider(std::function<void(int)> fn) {
+        input_provider_ = std::move(fn);
+    }
 
-	int get_exec_count(void){int tmp = trial_count_store; return tmp;}
- private:
-  // Methods which are used in this class only.
-  void PortAudioErrorCheck(const PaError&, const char*);
+    // Suppress "Underflow." log (call after EOF to avoid noise during pipeline drain)
+    void set_suppress_underflow(bool v) { suppress_underflow_ = v; }
 
-  // Callback
-  static int CallBack(const void* is,
-		      void* os,
-		      unsigned long fpb,
-		      const PaStreamCallbackTimeInfo* t,
-		      PaStreamCallbackFlags f,
-		      void* usrData){
-    reinterpret_cast<AudioDevice*>(usrData)->CallBack_(is, os, fpb, t, f);
-    return 0;
-  }
-  int CallBack_(const void*,
-		void*,
-		unsigned long,
-		const PaStreamCallbackTimeInfo*,
-		PaStreamCallbackFlags);
+    int get_exec_count() { int tmp = trial_count_store; trial_count = 0; trial_count_store = 0; return tmp; }
 
-  // members
-	int trial_count;
-	int trial_count_store;
-  int n_channel;
-  int sampling_rate;
-  int samples_per_buffer;
+private:
+    void PortAudioErrorCheck(const PaError&, const char*);
 
-  StreamBuffer<float>* inBuffer;
-  StreamBuffer<float>* outBuffer;
+    static int CallBack(const void* is, void* os,
+                        unsigned long fpb,
+                        const PaStreamCallbackTimeInfo* t,
+                        PaStreamCallbackFlags f, void* ud) {
+        reinterpret_cast<AudioDevice*>(ud)->CallBack_(is, os, fpb, t, f);
+        return 0;
+    }
+    int CallBack_(const void*, void*, unsigned long,
+                  const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags);
 
-  PaStream *stream;
-  PaStreamParameters inputParameters;
-  PaStreamParameters outputParameters;
+    std::function<void(int)> input_provider_;  // synthetic mic input (file mode)
+    bool suppress_underflow_{false};
+
+    int  trial_count{0};
+    int  trial_count_store{0};
+    int  n_channel{1};
+    int  sampling_rate{16000};
+    int  samples_per_buffer{1024};
+    bool input_enabled_{true};  // false = output-only mode
+
+    StreamBuffer<float>* inBuffer{nullptr};
+    StreamBuffer<float>* outBuffer{nullptr};
+
+    PaStream*           stream{nullptr};
+    PaStreamParameters  inputParameters{};
+    PaStreamParameters  outputParameters{};
 };
-
-#endif

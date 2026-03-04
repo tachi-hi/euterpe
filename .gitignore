@@ -10,4 +10,7 @@ obsolete
 
 build/
 vcpkg/
+*.mp3
+*.wav
+*.flac
 

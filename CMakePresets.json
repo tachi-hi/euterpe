@@ -15,6 +15,20 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
+        },
+        {
+            "name": "float",
+            "inherits": "default",
+            "cacheVariables": {
+                "EUTERPE_USE_FLOAT": "ON"
+            }
+        },
+        {
+            "name": "float-debug",
+            "inherits": "debug",
+            "cacheVariables": {
+                "EUTERPE_USE_FLOAT": "ON"
+            }
         }
     ]
 }

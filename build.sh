@@ -4,11 +4,15 @@
 #
 # Purpose:
 #   One-shot build script with vcpkg dependency resolution and CMake build.
+#   All dependencies (fftw3, portaudio, libsndfile, imgui, glfw3, nativefiledialog)
+#   are managed by vcpkg.
 #
 # Usage:
-#   ./build.sh          # Release build (default)
-#   ./build.sh debug    # Debug build
-#   ./build.sh clean    # Remove build artifacts
+#   ./build.sh              # Release build, double precision (default)
+#   ./build.sh debug        # Debug build,   double precision
+#   ./build.sh float        # Release build, float precision  (fftwf)
+#   ./build.sh float-debug  # Debug build,   float precision  (fftwf)
+#   ./build.sh clean        # Remove build artifacts
 
 set -e
 cd "$(dirname "$0")"
@@ -20,12 +24,13 @@ if [ "${1}" = "clean" ]; then
     exit 0
 fi
 
-# --- Build type ---
-if [ "${1}" = "debug" ]; then
-    PRESET="debug"
-else
-    PRESET="default"
-fi
+# --- Preset selection ---
+case "${1}" in
+    debug)       PRESET="debug"       ;;
+    float)       PRESET="float"       ;;
+    float-debug) PRESET="float-debug" ;;
+    *)           PRESET="default"     ;;
+esac
 
 # --- Check for CMake ---
 if ! command -v cmake &> /dev/null; then
@@ -59,4 +64,6 @@ echo "Building..."
 cmake --build build
 
 echo ""
-echo "Build complete: build/euterpe"
+echo "Build complete."
+[ -f build/euterpe ]       && echo "  euterpe       -> build/euterpe"
+[ -f build/euterpe_imgui ] && echo "  euterpe_imgui -> build/euterpe_imgui"
