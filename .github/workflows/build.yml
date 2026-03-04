@@ -14,11 +14,25 @@ jobs:
         preset: [default, float]
     steps:
       - uses: actions/checkout@v4
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            build-essential cmake pkg-config \
+            curl zip unzip tar \
+            libasound-dev \
             libgl-dev libx11-dev libxrandr-dev libxinerama-dev \
-            libxcursor-dev libxi-dev libxext-dev
+            libxcursor-dev libxi-dev libxext-dev \
+            libgtk-3-dev
+
+      - name: Cache vcpkg binary cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vcpkg
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-
+
       - name: Build (${{ matrix.preset }})
         run: ./build.sh ${{ matrix.preset }}
