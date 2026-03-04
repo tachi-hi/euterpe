@@ -2,21 +2,23 @@ name: build
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        preset: [default, float]
     steps:
       - uses: actions/checkout@v4
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            tcl tk \
             libgl-dev libx11-dev libxrandr-dev libxinerama-dev \
             libxcursor-dev libxi-dev libxext-dev
-      - name: Build
-        run: ./build.sh
+      - name: Build (${{ matrix.preset }})
+        run: ./build.sh ${{ matrix.preset }}
