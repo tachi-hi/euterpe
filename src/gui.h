@@ -1,40 +1,26 @@
-/*******************************************************************/
-//	GUI
+// gui.h
+//
+// Tcl/Tk-based GUI controller.
+// Launches TkTempoConv3.tcl via popen and reads parameters line-by-line.
+// Inherits shared parameter store from GUIBase.
 //
 // (c) 2010 Aug. Hideyuki Tachibana. tachibana@hil.t.u-tokyo.ac.jp
-/*******************************************************************/
 
 #pragma once
-#include "myMutex.h"
+#include "guiBase.h"
 #include <cstdio>
-#include <pthread.h>
+#include <thread>
 
-class GUI{
- public:
+class GUI : public GUIBase {
+public:
+    GUI(int argc, char** argv);
+    ~GUI();
 
-  GUI(int, char**);
-  ~GUI();
+    void start();
 
-  // GUI parameters
-  // myMutex chould be initialized in constructer
-  myMutex<int> key;
-  myMutex<int> tempo;
-  myMutex<int> volume;
-  enum RunState{is_ready, is_start, is_stop};
-  myMutex<RunState> runState;
+private:
+    FILE*       fpipe;
+    std::thread GUI_thread_;
 
-  // GUI panel
-	void start (void);
-  bool getstop(void){return stop == -1;}
-  bool getquit(void){return quit == -1;}
- private:
-  FILE * fpipe;
-	int stop;
-	int quit;
-  void getGUIparameters_(void);
-  static void* getGUIparameters(void* arg){reinterpret_cast<GUI *>(arg)->getGUIparameters_(); return 0;};
-
-  pthread_t GUI_thread;
-  pthread_attr_t attr;
-
+    void getGUIparameters_();
 };
